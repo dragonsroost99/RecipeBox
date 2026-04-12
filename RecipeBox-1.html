@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FBF7F0">
+<title>Recipe Box</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  :root {
+    --cream: #FBF7F0;
+    --card: #FFFCF8;
+    --brown: #3E2C1C;
+    --warm: #7C5C3E;
+    --accent: #C0623A;
+    --accent-l: #F5E6DC;
+    --tag: #EEE5D8;
+    --muted: #9E8873;
+    --border: rgba(124,92,62,0.15);
+    --green: #4A7C59;
+    --green-l: #E5F0E9;
+    --danger: #B83232;
+    --white: #fff;
+    --shadow: 0 2px 12px rgba(62,44,28,0.08);
+    --shadow-lg: 0 8px 32px rgba(62,44,28,0.14);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--brown);
+    overflow: hidden;
+  }
+
+  #app { height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; overflow: hidden; }
+
+  /* ── SCREENS ── */
+  .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--cream); transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s; }
+  .screen.hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
+  .screen.slide-left { transform: translateX(-6%); opacity: 0; pointer-events: none; }
+
+  /* ── HEADER ── */
+  .header { padding: 20px 20px 0; display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+  .header-text h1 { font-family: 'Lora', serif; font-size: 26px; font-weight: 600; letter-spacing: -0.5px; color: var(--brown); }
+  .header-text p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .btn-circle { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; transition: transform 0.15s, opacity 0.15s; }
+  .btn-circle:active { transform: scale(0.9); opacity: 0.8; }
+  .btn-add { background: var(--accent); color: var(--white); box-shadow: 0 3px 10px rgba(192,98,58,0.35); }
+
+  /* ── SEARCH ── */
+  .search-wrap { padding: 14px 20px 0; flex-shrink: 0; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: var(--white); border: 1px solid var(--border); border-radius: 24px; padding: 0 14px; box-shadow: var(--shadow); }
+  .search-box svg { flex-shrink: 0; opacity: 0.4; }
+  .search-box input { flex: 1; border: none; outline: none; background: transparent; padding: 11px 0; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--brown); }
+  .search-box input::placeholder { color: var(--muted); }
+
+  /* ── LIST ── */
+  .list-wrap { flex: 1; overflow-y: auto; padding: 14px 20px 80px; -webkit-overflow-scrolling: touch; }
+  .list-wrap::-webkit-scrollbar { display: none; }
+
+  /* ── RECIPE CARD ── */
+  .recipe-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .card-body { padding: 16px; cursor: pointer; }
+  .card-body:active { background: rgba(192,98,58,0.04); }
+  .card-emoji { font-size: 34px; line-height: 1; margin-bottom: 10px; }
+  .card-name { font-family: 'Lora', serif; font-size: 17px; font-weight: 600; color: var(--brown); line-height: 1.3; margin-bottom: 8px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+  .tag { background: var(--tag); color: var(--warm); font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px; }
+  .card-meta { display: flex; gap: 14px; }
+  .meta-item { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); }
+  .card-actions { display: flex; border-top: 1px solid var(--border); }
+  .card-action { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 11px; border: none; background: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--muted); transition: background 0.15s; }
+  .card-action:active { background: var(--accent-l); }
+  .card-action.share { color: var(--accent); font-weight: 600; }
+  .card-action + .card-action { border-left: 1px solid var(--border); }
+
+  /* ── EMPTY STATE ── */
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 40px 30px; text-align: center; }
+  .empty-emoji { font-size: 56px; margin-bottom: 16px; }
+  .empty h3 { font-family: 'Lora', serif; font-size: 18px; font-weight: 600; color: var(--brown); margin-bottom: 8px; }
+  .empty p { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+  .btn-primary { background: var(--accent); color: var(--white); border: none; border-radius: 24px; padding: 12px 28px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 10px rgba(192,98,58,0.3); transition: transform 0.15s; }
+  .btn-primary:active { transform: scale(0.96); }
+
+  /* ── DETAIL SCREEN ── */
+  #detail-screen .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 0; flex-shrink: 0; }
+  .btn-back { display: flex; align-items: center; gap: 4px; border: none; background: var(--tag); color: var(--warm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 20px; cursor: pointer; }
+  .btn-back:active { opacity: 0.7; }
+  .nav-actions { display: flex; gap: 8px; }
+  .btn-icon { width: 36px; height: 36px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; background: var(--tag); transition: transform 0.15s; }
+  .btn-icon:active { transform: scale(0.9); }
+  .btn-icon.danger { background: #FDEAEA; }
+
+  .detail-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 40px; }
+  .detail-scroll::-webkit-scrollbar { display: none; }
+
+  .detail-hero { text-align: center; padding: 20px 24px 16px; }
+  .detail-emoji { font-size: 64px; line-height: 1; margin-bottom: 12px; }
+  .detail-title { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; color: var(--brown); line-height: 1.3; margin-bottom: 12px; }
+  .detail-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 16px; }
+  .detail-stats { display: flex; background: var(--white); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .stat-box { flex: 1; padding: 14px; text-align: center; }
+  .stat-box + .stat-box { border-left: 1px solid var(--border); }
+  .stat-val { font-size: 22px; font-weight: 700; color: var(--brown); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  .detail-section { padding: 20px 24px 0; }
+  .section-title { font-size: 11px; font-weight: 700; color: var(--warm); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+  .ingredient-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--brown); line-height: 1.4; }
+  .ingredient-item:last-child { border-bottom: none; }
+  .bullet { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; margin-top: 5px; }
+  .step-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .step-item:last-child { border-bottom: none; }
+  .step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--white); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .step-text { font-size: 15px; color: var(--brown); line-height: 1.6; flex: 1; }
+  .notes-box { background: var(--accent-l); border-left: 3px solid var(--accent); border-radius: 10px; padding: 14px; font-size: 14px; color: var(--warm); line-height: 1.6; font-style: italic; }
+
+  .share-bar { padding: 20px 24px 0; }
+  .btn-share { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: var(--white); border: none; border-radius: 14px; padding: 15px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(192,98,58,0.3); transition: transform 0.15s; }
+  .btn-share:active { transform: scale(0.97); }
+
+  /* ── FORM MODAL ── */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(62,44,28,0.5); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet { background: var(--cream); border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; max-height: 92vh; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1); }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 20px 16px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .modal-header h2 { font-family: 'Lora', serif; font-size: 20px; font-weight: 600; color: var(--brown); }
+  .btn-save { background: var(--accent); color: var(--white); border: none; border-radius: 20px; padding: 8px 18px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .btn-close { background: var(--tag); color: var(--warm); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; -webkit-overflow-scrolling: touch; }
+  .modal-body::-webkit-scrollbar { display: none; }
+
+  /* ── FORM FIELDS ── */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+  .field input, .field textarea { width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--brown); outline: none; transition: border-color 0.2s; }
+  .field input:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  .field-row { display: flex; gap: 12px; }
+  .field-row .field { flex: 1; }
+
+  /* ── EMOJI PICKER ── */
+  .emoji-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .emoji-opt { width: 44px; height: 44px; border-radius: 10px; border: 2px solid transparent; background: var(--white); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s; }
+  .emoji-opt.active { border-color: var(--accent); background: var(--accent-l); }
+  .emoji-opt:active { transform: scale(0.9); }
+
+  /* ── TOAST ── */
+  .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--brown); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; z-index: 300; opacity: 0; transition: opacity 0.25s, transform 0.25s; white-space: nowrap; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── INSTALL BANNER ── */
+  .install-banner { background: var(--accent-l); border: 1px solid rgba(192,98,58,0.2); border-radius: 12px; margin: 12px 20px 0; padding: 11px 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--warm); flex-shrink: 0; }
+  .install-banner strong { font-weight: 600; display: block; margin-bottom: 1px; color: var(--accent); }
+  .install-banner .dismiss { margin-left: auto; font-size: 18px; cursor: pointer; opacity: 0.5; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ══ HOME SCREEN ══ -->
+  <div class="screen" id="home-screen">
+    <div class="header">
+      <div class="header-text">
+        <h1>🍳 Recipe Box</h1>
+        <p id="recipe-count">0 recipes</p>
+      </div>
+      <button class="btn-circle btn-add" onclick="openForm()" aria-label="Add recipe">+</button>
+    </div>
+
+    <div id="install-banner" class="install-banner" style="display:none;">
+      <span>📲</span>
+      <div><strong>Add to Home Screen</strong>Tap ⋮ → "Add to Home Screen" for app-like access</div>
+      <span class="dismiss" onclick="dismissBanner()">×</span>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="search-input" placeholder="Search by name or tag..." oninput="renderList()">
+      </div>
+    </div>
+
+    <div class="list-wrap" id="list-wrap"></div>
+  </div>
+
+  <!-- ══ DETAIL SCREEN ══ -->
+  <div class="screen hidden" id="detail-screen">
+    <div class="nav-bar">
+      <button class="btn-back" onclick="goHome()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Back
+      </button>
+      <div class="nav-actions">
+        <button class="btn-icon" onclick="editCurrent()" title="Edit">✏️</button>
+        <button class="btn-icon danger" onclick="deleteCurrent()" title="Delete">🗑️</button>
+      </div>
+    </div>
+    <div class="detail-scroll" id="detail-content"></div>
+  </div>
+
+  <!-- ══ FORM MODAL ══ -->
+  <div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <button class="btn-close" onclick="closeForm()">×</button>
+        <h2 id="modal-title">New Recipe</h2>
+        <button class="btn-save" onclick="saveForm()">Save</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>Icon</label>
+          <div class="emoji-grid" id="emoji-grid"></div>
+          <input type="hidden" id="f-emoji" value="🍳">
+        </div>
+        <div class="field">
+          <label>Recipe Name *</label>
+          <input type="text" id="f-name" placeholder="e.g. Sunday Braised Pork">
+        </div>
+        <div class="field">
+          <label>Tags (comma separated)</label>
+          <input type="text" id="f-tags" placeholder="e.g. dinner, pork, slow-cook">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Cook Time (min)</label>
+            <input type="number" id="f-time" placeholder="60" min="1" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label>Servings</label>
+            <input type="number" id="f-servings" placeholder="4" min="1" inputmode="numeric">
+          </div>
+        </div>
+        <div class="field">
+          <label>Ingredients (one per line)</label>
+          <textarea id="f-ingredients" placeholder="2 lbs pork shoulder&#10;1 onion, diced&#10;4 cloves garlic"></textarea>
+        </div>
+        <div class="field">
+          <label>Instructions (one step per line)</label>
+          <textarea id="f-steps" placeholder="Brown the pork on all sides&#10;Sauté onion until soft&#10;Add broth and braise"></textarea>
+        </div>
+        <div class="field">
+          <label>Notes (optional)</label>
+          <textarea id="f-notes" style="min-height:64px" placeholder="Tips, sourcing notes, variations..."></textarea>
+        </div>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const EMOJIS = ['🍳','🥘','🍲','🍜','🥗','🍕','🍔','🌮','🥩','🍗','🥦','🍰','🎂','🍪','🍞','🥐','🫕','🥚','🍝','🍱','🥑','🌯','🍣','🥞','🧇','🍖','🥓','🧆','🥘','🫔'];
+const KEY = 'recipebox_v2';
+
+let recipes = [];
+let currentId = null;
+let editingId = null;
+
+// ── STORAGE ──
+function load() {
+  try {
+    const d = localStorage.getItem(KEY);
+    if (d) { recipes = JSON.parse(d); return; }
+  } catch(e) {}
+  recipes = [
+    { id: '1', emoji: '🥩', name: 'Sunday Braised Pork Shoulder', tags: ['dinner','pork','batch-cook'], time: 90, servings: 8,
+      ingredients: ['9 lb pork shoulder','2 onions, diced','6 cloves garlic, minced','2 cups chicken broth','2 tbsp smoked paprika','1 tbsp cumin','Salt & pepper','2 tbsp olive oil'],
+      steps: ['Rub pork all over with paprika, cumin, salt, and pepper.','Heat oil in a large dutch oven over high heat.','Sear pork on all sides until deep brown, 3–4 min per side.','Remove pork, sauté onions 3 min, then garlic 1 min.','Nestle pork back in, pour broth around it.','Cover and braise at 300°F for 6–8 hours.','Rest 20 min, then shred with two forks.'],
+      notes: 'Great for Sunday Braise batch sessions. Freezes well. Source from Costco for best quality.', createdAt: Date.now()-86400000 },
+    { id: '2', emoji: '🍞', name: "Jaime's Sourdough Loaf", tags: ['bread','baking','sourdough'], time: 480, servings: 10,
+      ingredients: ['450g bread flour','325g filtered water','100g active starter','10g fine sea salt'],
+      steps: ['Mix flour and water, autolyse 1 hour.','Add starter and salt, fold until incorporated.','4 stretch-and-folds every 30 min.','Bulk ferment 2–3 more hours.','Shape into boule, cold proof overnight.','Preheat dutch oven in 500°F oven 45 min.','Score and bake 20 min lid on, 20 min lid off.','Cool at least 1 hour before slicing.'],
+      notes: "Jaime's recipe — do not modify. Sunday bake day staple.", createdAt: Date.now()-172800000 }
+  ];
+  save();
+}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(recipes)); } catch(e) {}
+}
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ── RENDER LIST ──
+function renderList() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const filtered = q ? recipes.filter(r =>
+    r.name.toLowerCase().includes(q) || (r.tags||[]).some(t => t.toLowerCase().includes(q))
+  ) : [...recipes];
+
+  const count = recipes.length;
+  document.getElementById('recipe-count').textContent = `${count} recipe${count !== 1 ? 's' : ''}`;
+
+  const wrap = document.getElementById('list-wrap');
+  if (!filtered.length) {
+    wrap.innerHTML = `<div class="empty">
+      <div class="empty-emoji">${q ? '🔍' : '📖'}</div>
+      <h3>${q ? 'No results' : 'No recipes yet'}</h3>
+      <p>${q ? 'Try a different search term.' : 'Start building your personal collection.'}</p>
+      ${!q ? `<button class="btn-primary" onclick="openForm()">Add First Recipe</button>` : ''}
+    </div>`;
+    return;
+  }
+
+  wrap.innerHTML = filtered.map((r, i) => `
+    <div class="recipe-card" style="animation-delay:${i*40}ms">
+      <div class="card-body" onclick="openDetail('${r.id}')">
+        <div class="card-emoji">${r.emoji}</div>
+        <div class="card-name">${r.name}</div>
+        ${r.tags?.length ? `<div class="tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+        <div class="card-meta">
+          <span class="meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${r.time} min
+          </span>
+          <span class="meta-item">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            ${r.servings} servings
+          </span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="card-action share" onclick="shareRecipe('${r.id}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share
+        </button>
+        <button class="card-action" onclick="editRecipe('${r.id}')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── DETAIL ──
+function openDetail(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  currentId = id;
+
+  const ing = (r.ingredients||[]).map(i => `<div class="ingredient-item"><div class="bullet"></div>${i}</div>`).join('');
+  const steps = (r.steps||[]).map((s,i) => `<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('');
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-emoji">${r.emoji}</div>
+      <div class="detail-title">${r.name}</div>
+      ${r.tags?.length ? `<div class="detail-tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+      <div class="detail-stats">
+        <div class="stat-box"><div class="stat-val">${r.time}</div><div class="stat-lbl">minutes</div></div>
+        <div class="stat-box"><div class="stat-val">${r.servings}</div><div class="stat-lbl">servings</div></div>
+      </div>
+    </div>
+    ${ing ? `<div class="detail-section"><div class="section-title">Ingredients</div>${ing}</div>` : ''}
+    ${steps ? `<div class="detail-section"><div class="section-title">Instructions</div>${steps}</div>` : ''}
+    ${r.notes ? `<div class="detail-section"><div class="section-title">Notes</div><div class="notes-box">${r.notes}</div></div>` : ''}
+    <div class="share-bar">
+      <button class="btn-share" onclick="shareRecipe('${r.id}')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        Share Recipe
+      </button>
+    </div>
+    <div style="height:20px"></div>
+  `;
+
+  document.getElementById('home-screen').classList.add('slide-left');
+  document.getElementById('detail-screen').classList.remove('hidden');
+  document.getElementById('detail-screen').scrollTop = 0;
+}
+
+function goHome() {
+  document.getElementById('detail-screen').classList.add('hidden');
+  document.getElementById('home-screen').classList.remove('slide-left');
+  currentId = null;
+}
+
+function editCurrent() { if (currentId) editRecipe(currentId); }
+
+function deleteCurrent() {
+  if (!currentId) return;
+  const r = recipes.find(x => x.id === currentId);
+  if (!confirm(`Delete "${r?.name}"?`)) return;
+  recipes = recipes.filter(x => x.id !== currentId);
+  save();
+  goHome();
+  renderList();
+  showToast('Recipe deleted');
+}
+
+// ── SHARE ──
+function formatText(r) {
+  const ing = (r.ingredients||[]).map(i=>`  • ${i}`).join('\n');
+  const steps = (r.steps||[]).map((s,i)=>`  ${i+1}. ${s}`).join('\n');
+  let t = `${r.emoji} ${r.name}\n⏱ ${r.time} min  |  👤 ${r.servings} servings\n`;
+  if (r.tags?.length) t += `🏷 ${r.tags.join(', ')}\n`;
+  t += `\n📋 Ingredients:\n${ing}\n\n👨‍🍳 Instructions:\n${steps}`;
+  if (r.notes) t += `\n\n📝 Notes: ${r.notes}`;
+  t += '\n\n— Shared from Recipe Box';
+  return t;
+}
+
+async function shareRecipe(id) {
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  const text = formatText(r);
+  if (navigator.share) {
+    try { await navigator.share({ title: r.name, text }); } catch(e) {}
+  } else {
+    await navigator.clipboard.writeText(text);
+    showToast('Copied to clipboard!');
+  }
+}
+
+function editRecipe(id) {
+  editingId = id;
+  const r = recipes.find(x => x.id === id);
+  if (!r) return;
+  document.getElementById('modal-title').textContent = 'Edit Recipe';
+  document.getElementById('f-emoji').value = r.emoji;
+  document.getElementById('f-name').value = r.name;
+  document.getElementById('f-tags').value = (r.tags||[]).join(', ');
+  document.getElementById('f-time').value = r.time;
+  document.getElementById('f-servings').value = r.servings;
+  document.getElementById('f-ingredients').value = (r.ingredients||[]).join('\n');
+  document.getElementById('f-steps').value = (r.steps||[]).join('\n');
+  document.getElementById('f-notes').value = r.notes || '';
+  buildEmojiGrid(r.emoji);
+  openModal();
+}
+
+// ── FORM ──
+function openForm() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'New Recipe';
+  ['f-name','f-tags','f-time','f-servings','f-ingredients','f-steps','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-emoji').value = '🍳';
+  buildEmojiGrid('🍳');
+  openModal();
+}
+
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 400);
+}
+
+function closeForm() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  editingId = null;
+}
+
+function overlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeForm();
+}
+
+function saveForm() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { showToast('Please enter a recipe name'); return; }
+
+  const data = {
+    id: editingId || genId(),
+    emoji: document.getElementById('f-emoji').value || '🍳',
+    name,
+    tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    time: parseInt(document.getElementById('f-time').value) || 30,
+    servings: parseInt(document.getElementById('f-servings').value) || 4,
+    ingredients: document.getElementById('f-ingredients').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    steps: document.getElementById('f-steps').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    notes: document.getElementById('f-notes').value.trim(),
+    createdAt: editingId ? (recipes.find(x=>x.id===editingId)?.createdAt || Date.now()) : Date.now()
+  };
+
+  if (editingId) {
+    recipes = recipes.map(r => r.id === editingId ? data : r);
+    if (currentId === editingId) openDetail(editingId);
+  } else {
+    recipes.unshift(data);
+  }
+
+  save();
+  closeForm();
+  renderList();
+  showToast(editingId ? 'Recipe updated!' : 'Recipe saved!');
+}
+
+// ── EMOJI PICKER ──
+function buildEmojiGrid(selected) {
+  const grid = document.getElementById('emoji-grid');
+  grid.innerHTML = EMOJIS.map(e =>
+    `<button type="button" class="emoji-opt ${e===selected?'active':''}" onclick="pickEmoji('${e}')">${e}</button>`
+  ).join('');
+}
+
+function pickEmoji(e) {
+  document.getElementById('f-emoji').value = e;
+  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.toggle('active', el.textContent === e));
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── INSTALL BANNER ──
+function showInstallBanner() {
+  if (window.matchMedia('(display-mode: standalone)').matches) return;
+  if (localStorage.getItem('banner_dismissed')) return;
+  if (/Android/i.test(navigator.userAgent)) {
+    document.getElementById('install-banner').style.display = 'flex';
+  }
+}
+
+function dismissBanner() {
+  document.getElementById('install-banner').style.display = 'none';
+  localStorage.setItem('banner_dismissed', '1');
+}
+
+// ── INIT ──
+load();
+renderList();
+showInstallBanner();
+</script>
+</body>
+</html>
