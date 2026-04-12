@@ -12,60 +12,38 @@
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
   :root {
-    --cream: #FBF7F0;
-    --card: #FFFCF8;
-    --brown: #3E2C1C;
-    --warm: #7C5C3E;
-    --accent: #C0623A;
-    --accent-l: #F5E6DC;
-    --tag: #EEE5D8;
-    --muted: #9E8873;
-    --border: rgba(124,92,62,0.15);
-    --green: #4A7C59;
-    --green-l: #E5F0E9;
-    --danger: #B83232;
-    --white: #fff;
-    --shadow: 0 2px 12px rgba(62,44,28,0.08);
-    --shadow-lg: 0 8px 32px rgba(62,44,28,0.14);
+    --cream: #FBF7F0; --card: #FFFCF8; --brown: #3E2C1C; --warm: #7C5C3E;
+    --accent: #C0623A; --accent-l: #F5E6DC; --tag: #EEE5D8; --muted: #9E8873;
+    --border: rgba(124,92,62,0.15); --green: #4A7C59; --green-l: #E5F0E9;
+    --danger: #B83232; --white: #fff;
+    --shadow: 0 2px 12px rgba(62,44,28,0.08); --shadow-lg: 0 8px 32px rgba(62,44,28,0.14);
   }
-
-  html, body {
-    height: 100%;
-    background: var(--cream);
-    font-family: 'DM Sans', sans-serif;
-    color: var(--brown);
-    overflow: hidden;
-  }
-
+  html, body { height: 100%; background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--brown); overflow: hidden; }
   #app { height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; overflow: hidden; }
 
-  /* ── SCREENS ── */
   .screen { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--cream); transition: transform 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s; }
   .screen.hidden { transform: translateX(100%); opacity: 0; pointer-events: none; }
   .screen.slide-left { transform: translateX(-6%); opacity: 0; pointer-events: none; }
 
-  /* ── HEADER ── */
   .header { padding: 20px 20px 0; display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
   .header-text h1 { font-family: 'Lora', serif; font-size: 26px; font-weight: 600; letter-spacing: -0.5px; color: var(--brown); }
   .header-text p { font-size: 12px; color: var(--muted); margin-top: 2px; }
-  .btn-circle { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; line-height: 1; transition: transform 0.15s, opacity 0.15s; }
+  .header-btns { display: flex; gap: 8px; align-items: center; }
+  .btn-circle { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; transition: transform 0.15s, opacity 0.15s; }
   .btn-circle:active { transform: scale(0.9); opacity: 0.8; }
   .btn-add { background: var(--accent); color: var(--white); box-shadow: 0 3px 10px rgba(192,98,58,0.35); }
+  .btn-import-open { background: var(--tag); color: var(--warm); font-size: 18px; }
 
-  /* ── SEARCH ── */
   .search-wrap { padding: 14px 20px 0; flex-shrink: 0; }
   .search-box { display: flex; align-items: center; gap: 8px; background: var(--white); border: 1px solid var(--border); border-radius: 24px; padding: 0 14px; box-shadow: var(--shadow); }
   .search-box svg { flex-shrink: 0; opacity: 0.4; }
   .search-box input { flex: 1; border: none; outline: none; background: transparent; padding: 11px 0; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--brown); }
   .search-box input::placeholder { color: var(--muted); }
 
-  /* ── LIST ── */
   .list-wrap { flex: 1; overflow-y: auto; padding: 14px 20px 80px; -webkit-overflow-scrolling: touch; }
   .list-wrap::-webkit-scrollbar { display: none; }
 
-  /* ── RECIPE CARD ── */
   .recipe-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; margin-bottom: 12px; overflow: hidden; box-shadow: var(--shadow); animation: fadeUp 0.3s ease both; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   .card-body { padding: 16px; cursor: pointer; }
@@ -82,7 +60,6 @@
   .card-action.share { color: var(--accent); font-weight: 600; }
   .card-action + .card-action { border-left: 1px solid var(--border); }
 
-  /* ── EMPTY STATE ── */
   .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 40px 30px; text-align: center; }
   .empty-emoji { font-size: 56px; margin-bottom: 16px; }
   .empty h3 { font-family: 'Lora', serif; font-size: 18px; font-weight: 600; color: var(--brown); margin-bottom: 8px; }
@@ -90,7 +67,6 @@
   .btn-primary { background: var(--accent); color: var(--white); border: none; border-radius: 24px; padding: 12px 28px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 3px 10px rgba(192,98,58,0.3); transition: transform 0.15s; }
   .btn-primary:active { transform: scale(0.96); }
 
-  /* ── DETAIL SCREEN ── */
   #detail-screen .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 16px 0; flex-shrink: 0; }
   .btn-back { display: flex; align-items: center; gap: 4px; border: none; background: var(--tag); color: var(--warm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 20px; cursor: pointer; }
   .btn-back:active { opacity: 0.7; }
@@ -101,7 +77,6 @@
 
   .detail-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 40px; }
   .detail-scroll::-webkit-scrollbar { display: none; }
-
   .detail-hero { text-align: center; padding: 20px 24px 16px; }
   .detail-emoji { font-size: 64px; line-height: 1; margin-bottom: 12px; }
   .detail-title { font-family: 'Lora', serif; font-size: 24px; font-weight: 600; color: var(--brown); line-height: 1.3; margin-bottom: 12px; }
@@ -111,7 +86,6 @@
   .stat-box + .stat-box { border-left: 1px solid var(--border); }
   .stat-val { font-size: 22px; font-weight: 700; color: var(--brown); }
   .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
   .detail-section { padding: 20px 24px 0; }
   .section-title { font-size: 11px; font-weight: 700; color: var(--warm); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
   .ingredient-item { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 15px; color: var(--brown); line-height: 1.4; }
@@ -122,12 +96,10 @@
   .step-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--white); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
   .step-text { font-size: 15px; color: var(--brown); line-height: 1.6; flex: 1; }
   .notes-box { background: var(--accent-l); border-left: 3px solid var(--accent); border-radius: 10px; padding: 14px; font-size: 14px; color: var(--warm); line-height: 1.6; font-style: italic; }
-
   .share-bar { padding: 20px 24px 0; }
   .btn-share { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--accent); color: var(--white); border: none; border-radius: 14px; padding: 15px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(192,98,58,0.3); transition: transform 0.15s; }
   .btn-share:active { transform: scale(0.97); }
 
-  /* ── FORM MODAL ── */
   .modal-overlay { position: fixed; inset: 0; background: rgba(62,44,28,0.5); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal-sheet { background: var(--cream); border-radius: 24px 24px 0 0; width: 100%; max-width: 480px; max-height: 92vh; display: flex; flex-direction: column; transform: translateY(100%); transition: transform 0.35s cubic-bezier(.4,0,.2,1); }
@@ -139,7 +111,6 @@
   .modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; -webkit-overflow-scrolling: touch; }
   .modal-body::-webkit-scrollbar { display: none; }
 
-  /* ── FORM FIELDS ── */
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
   .field input, .field textarea { width: 100%; background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 10px 13px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--brown); outline: none; transition: border-color 0.2s; }
@@ -148,17 +119,31 @@
   .field-row { display: flex; gap: 12px; }
   .field-row .field { flex: 1; }
 
-  /* ── EMOJI PICKER ── */
   .emoji-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
   .emoji-opt { width: 44px; height: 44px; border-radius: 10px; border: 2px solid transparent; background: var(--white); font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: border-color 0.15s, background 0.15s; }
   .emoji-opt.active { border-color: var(--accent); background: var(--accent-l); }
   .emoji-opt:active { transform: scale(0.9); }
 
-  /* ── TOAST ── */
+  /* ── IMPORT MODAL ── */
+  .import-hint { background: var(--tag); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; color: var(--warm); line-height: 1.7; }
+  .import-hint strong { display: block; font-size: 13px; color: var(--brown); margin-bottom: 6px; font-weight: 600; }
+  .import-hint code { display: block; background: var(--white); border-radius: 6px; padding: 8px 10px; margin-top: 8px; font-family: monospace; font-size: 11px; color: var(--accent); line-height: 1.8; white-space: pre; overflow-x: auto; border: 1px solid var(--border); }
+  .import-textarea { width: 100%; min-height: 180px; background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 12px; font-family: monospace; font-size: 13px; color: var(--brown); outline: none; resize: vertical; line-height: 1.6; transition: border-color 0.2s; }
+  .import-textarea:focus { border-color: var(--accent); }
+  .import-preview { background: var(--white); border: 2px solid var(--green); border-radius: 14px; padding: 16px; margin-top: 14px; display: none; }
+  .import-preview.visible { display: block; }
+  .import-preview-emoji { font-size: 28px; margin-bottom: 6px; }
+  .import-preview-title { font-family: 'Lora', serif; font-size: 16px; font-weight: 600; color: var(--brown); margin-bottom: 4px; }
+  .import-preview-meta { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .import-error { background: #FDEAEA; border: 1px solid rgba(184,50,50,0.2); border-radius: 10px; padding: 10px 14px; margin-top: 10px; font-size: 13px; color: var(--danger); display: none; }
+  .import-error.visible { display: block; }
+  .btn-confirm-import { width: 100%; background: var(--green); color: var(--white); border: none; border-radius: 12px; padding: 13px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 14px; transition: transform 0.15s; display: none; }
+  .btn-confirm-import.visible { display: block; }
+  .btn-confirm-import:active { transform: scale(0.97); }
+
   .toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--brown); color: var(--white); padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 500; z-index: 300; opacity: 0; transition: opacity 0.25s, transform 0.25s; white-space: nowrap; pointer-events: none; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* ── INSTALL BANNER ── */
   .install-banner { background: var(--accent-l); border: 1px solid rgba(192,98,58,0.2); border-radius: 12px; margin: 12px 20px 0; padding: 11px 14px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--warm); flex-shrink: 0; }
   .install-banner strong { font-weight: 600; display: block; margin-bottom: 1px; color: var(--accent); }
   .install-banner .dismiss { margin-left: auto; font-size: 18px; cursor: pointer; opacity: 0.5; flex-shrink: 0; }
@@ -167,14 +152,17 @@
 <body>
 <div id="app">
 
-  <!-- ══ HOME SCREEN ══ -->
+  <!-- HOME SCREEN -->
   <div class="screen" id="home-screen">
     <div class="header">
       <div class="header-text">
         <h1>🍳 Recipe Box</h1>
         <p id="recipe-count">0 recipes</p>
       </div>
-      <button class="btn-circle btn-add" onclick="openForm()" aria-label="Add recipe">+</button>
+      <div class="header-btns">
+        <button class="btn-circle btn-import-open" onclick="openImport()" title="Paste import" aria-label="Import recipe">📋</button>
+        <button class="btn-circle btn-add" onclick="openForm()" aria-label="Add recipe">+</button>
+      </div>
     </div>
 
     <div id="install-banner" class="install-banner" style="display:none;">
@@ -193,7 +181,7 @@
     <div class="list-wrap" id="list-wrap"></div>
   </div>
 
-  <!-- ══ DETAIL SCREEN ══ -->
+  <!-- DETAIL SCREEN -->
   <div class="screen hidden" id="detail-screen">
     <div class="nav-bar">
       <button class="btn-back" onclick="goHome()">
@@ -208,7 +196,7 @@
     <div class="detail-scroll" id="detail-content"></div>
   </div>
 
-  <!-- ══ FORM MODAL ══ -->
+  <!-- ADD/EDIT MODAL -->
   <div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
     <div class="modal-sheet">
       <div class="modal-header">
@@ -257,6 +245,56 @@
     </div>
   </div>
 
+  <!-- IMPORT MODAL -->
+  <div class="modal-overlay" id="import-overlay" onclick="importOverlayClick(event)">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <button class="btn-close" onclick="closeImport()">×</button>
+        <h2>Paste Recipe</h2>
+        <div style="width:60px"></div>
+      </div>
+      <div class="modal-body">
+        <div class="import-hint">
+          <strong>Standard Recipe Box format:</strong>
+          Paste a recipe using the format below. Shared recipes from Recipe Box are already in this format.
+          <code>NAME: Recipe Name
+EMOJI: 🍳
+TAGS: dinner, chicken
+TIME: 45
+SERVINGS: 4
+
+INGREDIENTS:
+First ingredient
+Second ingredient
+
+STEPS:
+First step
+Second step
+
+NOTES:
+Optional notes here</code>
+        </div>
+        <textarea
+          class="import-textarea"
+          id="import-paste"
+          placeholder="Paste your recipe here..."
+          oninput="parseImport()"
+        ></textarea>
+        <div class="import-error" id="import-error"></div>
+        <div class="import-preview" id="import-preview">
+          <div class="import-preview-emoji" id="ip-emoji"></div>
+          <div class="import-preview-title" id="ip-name"></div>
+          <div class="import-preview-meta" id="ip-meta"></div>
+          <div class="tags" id="ip-tags"></div>
+        </div>
+        <button class="btn-confirm-import" id="btn-confirm-import" onclick="confirmImport()">
+          ✓ Add to My Recipe Box
+        </button>
+        <div style="height:20px"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 </div>
 
@@ -267,8 +305,8 @@ const KEY = 'recipebox_v2';
 let recipes = [];
 let currentId = null;
 let editingId = null;
+let parsedImport = null;
 
-// ── STORAGE ──
 function load() {
   try {
     const d = localStorage.getItem(KEY);
@@ -277,12 +315,12 @@ function load() {
   recipes = [
     { id: '1', emoji: '🥩', name: 'Sunday Braised Pork Shoulder', tags: ['dinner','pork','batch-cook'], time: 90, servings: 8,
       ingredients: ['9 lb pork shoulder','2 onions, diced','6 cloves garlic, minced','2 cups chicken broth','2 tbsp smoked paprika','1 tbsp cumin','Salt & pepper','2 tbsp olive oil'],
-      steps: ['Rub pork all over with paprika, cumin, salt, and pepper.','Heat oil in a large dutch oven over high heat.','Sear pork on all sides until deep brown, 3–4 min per side.','Remove pork, sauté onions 3 min, then garlic 1 min.','Nestle pork back in, pour broth around it.','Cover and braise at 300°F for 6–8 hours.','Rest 20 min, then shred with two forks.'],
+      steps: ['Rub pork all over with paprika, cumin, salt, and pepper.','Heat oil in a large dutch oven over high heat.','Sear pork on all sides until deep brown, 3-4 min per side.','Remove pork, saute onions 3 min, then garlic 1 min.','Nestle pork back in, pour broth around it.','Cover and braise at 300F for 6-8 hours.','Rest 20 min, then shred with two forks.'],
       notes: 'Great for Sunday Braise batch sessions. Freezes well. Source from Costco for best quality.', createdAt: Date.now()-86400000 },
     { id: '2', emoji: '🍞', name: "Jaime's Sourdough Loaf", tags: ['bread','baking','sourdough'], time: 480, servings: 10,
       ingredients: ['450g bread flour','325g filtered water','100g active starter','10g fine sea salt'],
-      steps: ['Mix flour and water, autolyse 1 hour.','Add starter and salt, fold until incorporated.','4 stretch-and-folds every 30 min.','Bulk ferment 2–3 more hours.','Shape into boule, cold proof overnight.','Preheat dutch oven in 500°F oven 45 min.','Score and bake 20 min lid on, 20 min lid off.','Cool at least 1 hour before slicing.'],
-      notes: "Jaime's recipe — do not modify. Sunday bake day staple.", createdAt: Date.now()-172800000 }
+      steps: ['Mix flour and water, autolyse 1 hour.','Add starter and salt, fold until incorporated.','4 stretch-and-folds every 30 min.','Bulk ferment 2-3 more hours.','Shape into boule, cold proof overnight.','Preheat dutch oven in 500F oven 45 min.','Score and bake 20 min lid on, 20 min lid off.','Cool at least 1 hour before slicing.'],
+      notes: "Jaime's recipe - do not modify. Sunday bake day staple.", createdAt: Date.now()-172800000 }
   ];
   save();
 }
@@ -293,92 +331,41 @@ function save() {
 
 function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
-// ── RENDER LIST ──
+// ── RENDER ──
 function renderList() {
   const q = document.getElementById('search-input').value.toLowerCase().trim();
   const filtered = q ? recipes.filter(r =>
     r.name.toLowerCase().includes(q) || (r.tags||[]).some(t => t.toLowerCase().includes(q))
   ) : [...recipes];
-
   const count = recipes.length;
-  document.getElementById('recipe-count').textContent = `${count} recipe${count !== 1 ? 's' : ''}`;
-
+  document.getElementById('recipe-count').textContent = count + ' recipe' + (count !== 1 ? 's' : '');
   const wrap = document.getElementById('list-wrap');
   if (!filtered.length) {
-    wrap.innerHTML = `<div class="empty">
-      <div class="empty-emoji">${q ? '🔍' : '📖'}</div>
-      <h3>${q ? 'No results' : 'No recipes yet'}</h3>
-      <p>${q ? 'Try a different search term.' : 'Start building your personal collection.'}</p>
-      ${!q ? `<button class="btn-primary" onclick="openForm()">Add First Recipe</button>` : ''}
-    </div>`;
+    wrap.innerHTML = '<div class="empty"><div class="empty-emoji">' + (q ? '🔍' : '📖') + '</div><h3>' + (q ? 'No results' : 'No recipes yet') + '</h3><p>' + (q ? 'Try a different search term.' : 'Start building your personal collection.') + '</p>' + (!q ? '<button class="btn-primary" onclick="openForm()">Add First Recipe</button>' : '') + '</div>';
     return;
   }
-
-  wrap.innerHTML = filtered.map((r, i) => `
-    <div class="recipe-card" style="animation-delay:${i*40}ms">
-      <div class="card-body" onclick="openDetail('${r.id}')">
-        <div class="card-emoji">${r.emoji}</div>
-        <div class="card-name">${r.name}</div>
-        ${r.tags?.length ? `<div class="tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
-        <div class="card-meta">
-          <span class="meta-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            ${r.time} min
-          </span>
-          <span class="meta-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            ${r.servings} servings
-          </span>
-        </div>
-      </div>
-      <div class="card-actions">
-        <button class="card-action share" onclick="shareRecipe('${r.id}')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-          Share
-        </button>
-        <button class="card-action" onclick="editRecipe('${r.id}')">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          Edit
-        </button>
-      </div>
-    </div>
-  `).join('');
+  wrap.innerHTML = filtered.map(function(r, i) {
+    return '<div class="recipe-card" style="animation-delay:' + (i*40) + 'ms"><div class="card-body" onclick="openDetail(\'' + r.id + '\')"><div class="card-emoji">' + r.emoji + '</div><div class="card-name">' + r.name + '</div>' + (r.tags && r.tags.length ? '<div class="tags">' + r.tags.map(function(t){return '<span class="tag">'+t+'</span>';}).join('') + '</div>' : '') + '<div class="card-meta"><span class="meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + r.time + ' min</span><span class="meta-item"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' + r.servings + ' servings</span></div></div><div class="card-actions"><button class="card-action share" onclick="shareRecipe(\'' + r.id + '\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button><button class="card-action" onclick="editRecipe(\'' + r.id + '\')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button></div></div>';
+  }).join('');
 }
 
 // ── DETAIL ──
 function openDetail(id) {
-  const r = recipes.find(x => x.id === id);
+  const r = recipes.find(function(x){return x.id===id;});
   if (!r) return;
   currentId = id;
-
-  const ing = (r.ingredients||[]).map(i => `<div class="ingredient-item"><div class="bullet"></div>${i}</div>`).join('');
-  const steps = (r.steps||[]).map((s,i) => `<div class="step-item"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('');
-
-  document.getElementById('detail-content').innerHTML = `
-    <div class="detail-hero">
-      <div class="detail-emoji">${r.emoji}</div>
-      <div class="detail-title">${r.name}</div>
-      ${r.tags?.length ? `<div class="detail-tags">${r.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
-      <div class="detail-stats">
-        <div class="stat-box"><div class="stat-val">${r.time}</div><div class="stat-lbl">minutes</div></div>
-        <div class="stat-box"><div class="stat-val">${r.servings}</div><div class="stat-lbl">servings</div></div>
-      </div>
-    </div>
-    ${ing ? `<div class="detail-section"><div class="section-title">Ingredients</div>${ing}</div>` : ''}
-    ${steps ? `<div class="detail-section"><div class="section-title">Instructions</div>${steps}</div>` : ''}
-    ${r.notes ? `<div class="detail-section"><div class="section-title">Notes</div><div class="notes-box">${r.notes}</div></div>` : ''}
-    <div class="share-bar">
-      <button class="btn-share" onclick="shareRecipe('${r.id}')">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-        Share Recipe
-      </button>
-    </div>
-    <div style="height:20px"></div>
-  `;
-
+  const ing = (r.ingredients||[]).map(function(i){return '<div class="ingredient-item"><div class="bullet"></div>'+i+'</div>';}).join('');
+  const steps = (r.steps||[]).map(function(s,i){return '<div class="step-item"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+s+'</div></div>';}).join('');
+  document.getElementById('detail-content').innerHTML =
+    '<div class="detail-hero"><div class="detail-emoji">'+r.emoji+'</div><div class="detail-title">'+r.name+'</div>' +
+    (r.tags&&r.tags.length ? '<div class="detail-tags">'+r.tags.map(function(t){return '<span class="tag">'+t+'</span>';}).join('')+'</div>' : '') +
+    '<div class="detail-stats"><div class="stat-box"><div class="stat-val">'+r.time+'</div><div class="stat-lbl">minutes</div></div><div class="stat-box"><div class="stat-val">'+r.servings+'</div><div class="stat-lbl">servings</div></div></div></div>' +
+    (ing ? '<div class="detail-section"><div class="section-title">Ingredients</div>'+ing+'</div>' : '') +
+    (steps ? '<div class="detail-section"><div class="section-title">Instructions</div>'+steps+'</div>' : '') +
+    (r.notes ? '<div class="detail-section"><div class="section-title">Notes</div><div class="notes-box">'+r.notes+'</div></div>' : '') +
+    '<div class="share-bar"><button class="btn-share" onclick="shareRecipe(\''+r.id+'\')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share Recipe</button></div><div style="height:20px"></div>';
   document.getElementById('home-screen').classList.add('slide-left');
   document.getElementById('detail-screen').classList.remove('hidden');
-  document.getElementById('detail-screen').scrollTop = 0;
 }
 
 function goHome() {
@@ -391,42 +378,178 @@ function editCurrent() { if (currentId) editRecipe(currentId); }
 
 function deleteCurrent() {
   if (!currentId) return;
-  const r = recipes.find(x => x.id === currentId);
-  if (!confirm(`Delete "${r?.name}"?`)) return;
-  recipes = recipes.filter(x => x.id !== currentId);
-  save();
-  goHome();
-  renderList();
+  const r = recipes.find(function(x){return x.id===currentId;});
+  if (!confirm('Delete "' + (r ? r.name : 'this recipe') + '"?')) return;
+  recipes = recipes.filter(function(x){return x.id!==currentId;});
+  save(); goHome(); renderList();
   showToast('Recipe deleted');
 }
 
 // ── SHARE ──
 function formatText(r) {
-  const ing = (r.ingredients||[]).map(i=>`  • ${i}`).join('\n');
-  const steps = (r.steps||[]).map((s,i)=>`  ${i+1}. ${s}`).join('\n');
-  let t = `${r.emoji} ${r.name}\n⏱ ${r.time} min  |  👤 ${r.servings} servings\n`;
-  if (r.tags?.length) t += `🏷 ${r.tags.join(', ')}\n`;
-  t += `\n📋 Ingredients:\n${ing}\n\n👨‍🍳 Instructions:\n${steps}`;
-  if (r.notes) t += `\n\n📝 Notes: ${r.notes}`;
+  const ing = (r.ingredients||[]).map(function(i){return '  - '+i;}).join('\n');
+  const steps = (r.steps||[]).map(function(s,i){return '  '+(i+1)+'. '+s;}).join('\n');
+  let t = 'NAME: ' + r.name + '\n';
+  t += 'EMOJI: ' + r.emoji + '\n';
+  if (r.tags&&r.tags.length) t += 'TAGS: ' + r.tags.join(', ') + '\n';
+  t += 'TIME: ' + r.time + '\n';
+  t += 'SERVINGS: ' + r.servings + '\n';
+  t += '\nINGREDIENTS:\n' + ing;
+  t += '\n\nSTEPS:\n' + steps;
+  if (r.notes) t += '\n\nNOTES:\n' + r.notes;
   t += '\n\n— Shared from Recipe Box';
   return t;
 }
 
 async function shareRecipe(id) {
-  const r = recipes.find(x => x.id === id);
+  const r = recipes.find(function(x){return x.id===id;});
   if (!r) return;
   const text = formatText(r);
   if (navigator.share) {
-    try { await navigator.share({ title: r.name, text }); } catch(e) {}
+    try { await navigator.share({ title: r.name, text: text }); } catch(e) {}
   } else {
-    await navigator.clipboard.writeText(text);
-    showToast('Copied to clipboard!');
+    try { await navigator.clipboard.writeText(text); showToast('Copied to clipboard!'); } catch(e) {}
   }
 }
 
+// ── IMPORT PARSING ──
+function parseImport() {
+  const raw = document.getElementById('import-paste').value.trim();
+  const preview = document.getElementById('import-preview');
+  const error = document.getElementById('import-error');
+  const btn = document.getElementById('btn-confirm-import');
+  parsedImport = null;
+
+  preview.classList.remove('visible');
+  error.classList.remove('visible');
+  btn.classList.remove('visible');
+
+  if (!raw) return;
+
+  try {
+    const result = parseRecipeText(raw);
+    if (!result.name) {
+      error.textContent = 'Could not find a recipe name. Make sure your text includes "NAME: Recipe Name"';
+      error.classList.add('visible');
+      return;
+    }
+    parsedImport = result;
+    document.getElementById('ip-emoji').textContent = result.emoji;
+    document.getElementById('ip-name').textContent = result.name;
+    document.getElementById('ip-meta').textContent =
+      result.time + ' min  •  ' + result.servings + ' servings  •  ' +
+      result.ingredients.length + ' ingredients  •  ' + result.steps.length + ' steps';
+    document.getElementById('ip-tags').innerHTML = result.tags.map(function(t){
+      return '<span class="tag">'+t+'</span>';
+    }).join('');
+    preview.classList.add('visible');
+    btn.classList.add('visible');
+  } catch(e) {
+    error.textContent = 'Could not parse this recipe. Check the format and try again.';
+    error.classList.add('visible');
+  }
+}
+
+function parseRecipeText(text) {
+  // Strip the "Shared from Recipe Box" footer if present
+  text = text.replace(/\n?—\s*Shared from Recipe Box\s*$/i, '').trim();
+
+  const lines = text.split('\n');
+  const result = {
+    emoji: '🍳', name: '', tags: [], time: 30, servings: 4,
+    ingredients: [], steps: [], notes: ''
+  };
+
+  // Parse labeled fields at top (KEY: value)
+  const labelMap = {
+    'name': 'name', 'recipe': 'name', 'recipe name': 'name',
+    'emoji': 'emoji', 'icon': 'emoji',
+    'tags': 'tags', 'tag': 'tags', 'category': 'tags',
+    'time': 'time', 'cook time': 'time', 'cooking time': 'time', 'prep time': 'time',
+    'servings': 'servings', 'serves': 'servings', 'yield': 'servings'
+  };
+
+  let currentSection = null;
+  const sectionBuffer = { ingredients: [], steps: [], notes: [] };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    // Check for section headers
+    const upper = trimmed.toUpperCase().replace(/[:\s]+$/, '');
+    if (upper === 'INGREDIENTS' || upper === 'INGREDIENT') { currentSection = 'ingredients'; continue; }
+    if (upper === 'STEPS' || upper === 'INSTRUCTIONS' || upper === 'DIRECTIONS' || upper === 'METHOD') { currentSection = 'steps'; continue; }
+    if (upper === 'NOTES' || upper === 'NOTE' || upper === 'TIPS' || upper === 'TIP') { currentSection = 'notes'; continue; }
+
+    // Check for KEY: VALUE pairs (only before sections start)
+    const colonIdx = trimmed.indexOf(':');
+    if (colonIdx > 0 && colonIdx < 20 && currentSection === null) {
+      const key = trimmed.slice(0, colonIdx).trim().toLowerCase();
+      const val = trimmed.slice(colonIdx + 1).trim();
+      const mapped = labelMap[key];
+      if (mapped === 'name') { result.name = val; continue; }
+      if (mapped === 'emoji') { result.emoji = val; continue; }
+      if (mapped === 'tags') { result.tags = val.split(',').map(function(t){return t.trim();}).filter(Boolean); continue; }
+      if (mapped === 'time') { const n = parseInt(val); if (!isNaN(n)) result.time = n; continue; }
+      if (mapped === 'servings') { const n = parseInt(val); if (!isNaN(n)) result.servings = n; continue; }
+    }
+
+    // Add to current section buffer
+    if (currentSection === 'ingredients') {
+      // Strip leading bullets, dashes, numbers
+      const clean = trimmed.replace(/^[-•*]\s*/, '').replace(/^\d+[.)]\s*/, '').trim();
+      if (clean) sectionBuffer.ingredients.push(clean);
+    } else if (currentSection === 'steps') {
+      // Strip leading step numbers
+      const clean = trimmed.replace(/^\d+[.)]\s*/, '').trim();
+      if (clean) sectionBuffer.steps.push(clean);
+    } else if (currentSection === 'notes') {
+      sectionBuffer.notes.push(trimmed);
+    }
+  }
+
+  result.ingredients = sectionBuffer.ingredients;
+  result.steps = sectionBuffer.steps;
+  result.notes = sectionBuffer.notes.join(' ').trim();
+
+  return result;
+}
+
+function confirmImport() {
+  if (!parsedImport) return;
+  const recipe = Object.assign({}, parsedImport, { id: genId(), createdAt: Date.now() });
+  recipes.unshift(recipe);
+  save();
+  closeImport();
+  renderList();
+  showToast('"' + recipe.name + '" added!');
+}
+
+function openImport() {
+  document.getElementById('import-paste').value = '';
+  document.getElementById('import-preview').classList.remove('visible');
+  document.getElementById('import-error').classList.remove('visible');
+  document.getElementById('btn-confirm-import').classList.remove('visible');
+  parsedImport = null;
+  document.getElementById('import-overlay').classList.add('open');
+  setTimeout(function(){ document.getElementById('import-paste').focus(); }, 400);
+}
+
+function closeImport() {
+  document.getElementById('import-overlay').classList.remove('open');
+  parsedImport = null;
+}
+
+function importOverlayClick(e) {
+  if (e.target === document.getElementById('import-overlay')) closeImport();
+}
+
+// ── ADD/EDIT FORM ──
 function editRecipe(id) {
   editingId = id;
-  const r = recipes.find(x => x.id === id);
+  const r = recipes.find(function(x){return x.id===id;});
   if (!r) return;
   document.getElementById('modal-title').textContent = 'Edit Recipe';
   document.getElementById('f-emoji').value = r.emoji;
@@ -441,11 +564,10 @@ function editRecipe(id) {
   openModal();
 }
 
-// ── FORM ──
 function openForm() {
   editingId = null;
   document.getElementById('modal-title').textContent = 'New Recipe';
-  ['f-name','f-tags','f-time','f-servings','f-ingredients','f-steps','f-notes'].forEach(id => document.getElementById(id).value = '');
+  ['f-name','f-tags','f-time','f-servings','f-ingredients','f-steps','f-notes'].forEach(function(id){ document.getElementById(id).value = ''; });
   document.getElementById('f-emoji').value = '🍳';
   buildEmojiGrid('🍳');
   openModal();
@@ -453,7 +575,7 @@ function openForm() {
 
 function openModal() {
   document.getElementById('modal-overlay').classList.add('open');
-  setTimeout(() => document.getElementById('f-name').focus(), 400);
+  setTimeout(function(){ document.getElementById('f-name').focus(); }, 400);
 }
 
 function closeForm() {
@@ -468,61 +590,50 @@ function overlayClick(e) {
 function saveForm() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { showToast('Please enter a recipe name'); return; }
-
   const data = {
     id: editingId || genId(),
     emoji: document.getElementById('f-emoji').value || '🍳',
-    name,
-    tags: document.getElementById('f-tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    name: name,
+    tags: document.getElementById('f-tags').value.split(',').map(function(t){return t.trim();}).filter(Boolean),
     time: parseInt(document.getElementById('f-time').value) || 30,
     servings: parseInt(document.getElementById('f-servings').value) || 4,
-    ingredients: document.getElementById('f-ingredients').value.split('\n').map(s=>s.trim()).filter(Boolean),
-    steps: document.getElementById('f-steps').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    ingredients: document.getElementById('f-ingredients').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
+    steps: document.getElementById('f-steps').value.split('\n').map(function(s){return s.trim();}).filter(Boolean),
     notes: document.getElementById('f-notes').value.trim(),
-    createdAt: editingId ? (recipes.find(x=>x.id===editingId)?.createdAt || Date.now()) : Date.now()
+    createdAt: editingId ? (recipes.find(function(x){return x.id===editingId;}) || {}).createdAt || Date.now() : Date.now()
   };
-
   if (editingId) {
-    recipes = recipes.map(r => r.id === editingId ? data : r);
+    recipes = recipes.map(function(r){ return r.id === editingId ? data : r; });
     if (currentId === editingId) openDetail(editingId);
   } else {
     recipes.unshift(data);
   }
-
-  save();
-  closeForm();
-  renderList();
+  save(); closeForm(); renderList();
   showToast(editingId ? 'Recipe updated!' : 'Recipe saved!');
 }
 
-// ── EMOJI PICKER ──
 function buildEmojiGrid(selected) {
-  const grid = document.getElementById('emoji-grid');
-  grid.innerHTML = EMOJIS.map(e =>
-    `<button type="button" class="emoji-opt ${e===selected?'active':''}" onclick="pickEmoji('${e}')">${e}</button>`
-  ).join('');
+  document.getElementById('emoji-grid').innerHTML = EMOJIS.map(function(e){
+    return '<button type="button" class="emoji-opt ' + (e===selected?'active':'') + '" onclick="pickEmoji(\'' + e + '\')">' + e + '</button>';
+  }).join('');
 }
 
 function pickEmoji(e) {
   document.getElementById('f-emoji').value = e;
-  document.querySelectorAll('.emoji-opt').forEach(el => el.classList.toggle('active', el.textContent === e));
+  document.querySelectorAll('.emoji-opt').forEach(function(el){ el.classList.toggle('active', el.textContent === e); });
 }
 
-// ── TOAST ──
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(function(){ t.classList.remove('show'); }, 2400);
 }
 
-// ── INSTALL BANNER ──
 function showInstallBanner() {
   if (window.matchMedia('(display-mode: standalone)').matches) return;
   if (localStorage.getItem('banner_dismissed')) return;
-  if (/Android/i.test(navigator.userAgent)) {
-    document.getElementById('install-banner').style.display = 'flex';
-  }
+  if (/Android/i.test(navigator.userAgent)) document.getElementById('install-banner').style.display = 'flex';
 }
 
 function dismissBanner() {
@@ -530,7 +641,6 @@ function dismissBanner() {
   localStorage.setItem('banner_dismissed', '1');
 }
 
-// ── INIT ──
 load();
 renderList();
 showInstallBanner();
