@@ -6,10 +6,146 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#FBF7F0">
+<meta name="theme-color" content="#C0623A">
+<meta name="apple-mobile-web-app-title" content="Recipe Box">
 <title>Recipe Box</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+(function(){
+  function makeIcon(size) {
+    var c = document.createElement('canvas');
+    c.width = c.height = size;
+    var ctx = c.getContext('2d');
+    var s = size;
+
+    // Rounded square background
+    var r = s * 0.18;
+    ctx.fillStyle = '#C0623A';
+    ctx.beginPath();
+    ctx.moveTo(r,0);ctx.lineTo(s-r,0);
+    ctx.quadraticCurveTo(s,0,s,r);
+    ctx.lineTo(s,s-r);
+    ctx.quadraticCurveTo(s,s,s-r,s);
+    ctx.lineTo(r,s);
+    ctx.quadraticCurveTo(0,s,0,s-r);
+    ctx.lineTo(0,r);
+    ctx.quadraticCurveTo(0,0,r,0);
+    ctx.fill();
+
+    // Inner darker rounded rect (box body shadow)
+    var ir = s * 0.13;
+    var ip = s * 0.09;
+    ctx.fillStyle = '#A0461E';
+    ctx.beginPath();
+    ctx.moveTo(ip+ir,ip);ctx.lineTo(s-ip-ir,ip);
+    ctx.quadraticCurveTo(s-ip,ip,s-ip,ip+ir);
+    ctx.lineTo(s-ip,s-ip-ir);
+    ctx.quadraticCurveTo(s-ip,s-ip,s-ip-ir,s-ip);
+    ctx.lineTo(ip+ir,s-ip);
+    ctx.quadraticCurveTo(ip,s-ip,ip,s-ip-ir);
+    ctx.lineTo(ip,ip+ir);
+    ctx.quadraticCurveTo(ip,ip,ip+ir,ip);
+    ctx.fill();
+
+    // Box drawer body
+    var bx = s*0.17, by = s*0.50, bw = s*0.66, bh = s*0.36;
+    ctx.fillStyle = '#7C3214';
+    ctx.beginPath();
+    ctx.roundRect(bx, by, bw, bh, s*0.04);
+    ctx.fill();
+
+    // Box top lip
+    ctx.fillStyle = '#E8855A';
+    ctx.beginPath();
+    ctx.roundRect(bx, by - s*0.06, bw, s*0.09, s*0.03);
+    ctx.fill();
+
+    // Drawer label tab
+    ctx.fillStyle = '#C0623A';
+    ctx.beginPath();
+    ctx.roundRect(bx + s*0.05, by - s*0.03, s*0.22, s*0.07, s*0.015);
+    ctx.fill();
+
+    // Recipe card back (rotated)
+    ctx.save();
+    ctx.translate(s*0.50, s*0.64);
+    ctx.rotate(-0.13);
+    ctx.fillStyle = '#FBF7F0';
+    ctx.beginPath();
+    ctx.roundRect(-s*0.22, -s*0.18, s*0.44, s*0.32, s*0.03);
+    ctx.fill();
+    ctx.restore();
+
+    // Recipe card mid (rotated)
+    ctx.save();
+    ctx.translate(s*0.50, s*0.64);
+    ctx.rotate(-0.04);
+    ctx.fillStyle = '#FBF7F0';
+    ctx.beginPath();
+    ctx.roundRect(-s*0.22, -s*0.18, s*0.44, s*0.32, s*0.03);
+    ctx.fill();
+    ctx.restore();
+
+    // Recipe card front (straight)
+    var cx = s*0.28, cy = s*0.46, cw = s*0.44, ch = s*0.32;
+    ctx.fillStyle = '#FFFCF8';
+    ctx.beginPath();
+    ctx.roundRect(cx, cy, cw, ch, s*0.03);
+    ctx.fill();
+
+    // Card header stripe
+    ctx.fillStyle = '#EEE5D8';
+    ctx.beginPath();
+    ctx.roundRect(cx, cy, cw, ch*0.22, [s*0.03, s*0.03, 0, 0]);
+    ctx.fill();
+
+    // Card title line
+    ctx.fillStyle = '#C0623A';
+    ctx.globalAlpha = 0.8;
+    ctx.beginPath();
+    ctx.roundRect(cx + s*0.04, cy + s*0.11, cw*0.7, s*0.025, s*0.01);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // Card content lines
+    ctx.fillStyle = '#9E8873';
+    ctx.globalAlpha = 0.6;
+    var lineY = cy + ch*0.35;
+    for (var i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.roundRect(cx + s*0.04, lineY, cw*(0.75 - i*0.1), s*0.02, s*0.008);
+      ctx.fill();
+      lineY += s*0.065;
+    }
+    ctx.globalAlpha = 1;
+
+    // Pull knob on drawer
+    ctx.fillStyle = '#E8855A';
+    ctx.beginPath();
+    ctx.arc(s*0.50, s*0.82, s*0.042, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#C0623A';
+    ctx.beginPath();
+    ctx.arc(s*0.50, s*0.82, s*0.022, 0, Math.PI*2);
+    ctx.fill();
+
+    return c.toDataURL('image/png');
+  }
+
+  window.addEventListener('DOMContentLoaded',function(){
+    var i512=makeIcon(512), i192=makeIcon(192);
+    var atl=document.createElement('link');
+    atl.rel='apple-touch-icon'; atl.href=i512;
+    document.head.appendChild(atl);
+    var data={name:'Recipe Box',short_name:'Recipe Box',start_url:'.',display:'standalone',background_color:'#FBF7F0',theme_color:'#C0623A',icons:[{src:i192,sizes:'192x192',type:'image/png'},{src:i512,sizes:'512x512',type:'image/png'}]};
+    var blob=new Blob([JSON.stringify(data)],{type:'application/manifest+json'});
+    var ml=document.createElement('link');
+    ml.rel='manifest'; ml.href=URL.createObjectURL(blob);
+    document.head.appendChild(ml);
+  });
+})();
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   :root {
