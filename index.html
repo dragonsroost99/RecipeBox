@@ -52,6 +52,45 @@
   --danger:#B83232;--white:#fff;--shadow:0 2px 12px rgba(62,44,28,0.08);
   --nav-h:64px;
 }
+
+/* ── THEMES ── */
+body.theme-midnight{
+  --cream:#0F1117;--card:#1C1B26;--brown:#E8E0F0;--warm:#9B8FCC;
+  --accent:#7C6FC4;--accent-l:#2A2840;--tag:#2A2840;--muted:#6B6880;
+  --border:rgba(180,170,220,0.12);--green:#5B8FA8;--green-l:#1A2A38;
+  --danger:#C06060;--white:#1C1B26;--shadow:0 2px 12px rgba(0,0,0,0.4);
+}
+body.theme-obsidian{
+  --cream:#121212;--card:#1E1C18;--brown:#F0EDE8;--warm:#C8A96A;
+  --accent:#C8960A;--accent-l:#2E2A1E;--tag:#2E2A1E;--muted:#7A7060;
+  --border:rgba(220,160,60,0.15);--green:#6A9A5A;--green-l:#1A2A18;
+  --danger:#C06050;--white:#1E1C18;--shadow:0 2px 12px rgba(0,0,0,0.5);
+}
+body.theme-sage{
+  --cream:#F2F5F0;--card:#FAFCF8;--brown:#1F2E1F;--warm:#4A7A50;
+  --accent:#3D7A4A;--accent-l:#DFF0DC;--tag:#DFF0DC;--muted:#7A9478;
+  --border:rgba(58,90,58,0.15);--green:#3D7A4A;--green-l:#DFF0DC;
+  --danger:#B04040;--white:#FAFCF8;--shadow:0 2px 12px rgba(30,60,30,0.08);
+}
+
+/* ── THEME PICKER IN SETTINGS ── */
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px;}
+.theme-swatch{border-radius:14px;overflow:hidden;cursor:pointer;border:2.5px solid transparent;transition:border-color 0.2s,transform 0.15s;}
+.theme-swatch:active{transform:scale(0.96);}
+.theme-swatch.active{border-color:var(--accent);}
+.swatch-top{padding:10px 12px 8px;}
+.swatch-name{font-family:'Lora',serif;font-size:13px;font-weight:600;}
+.swatch-sub{font-size:9px;opacity:0.6;margin-top:1px;}
+.swatch-body{padding:8px 10px 10px;display:flex;flex-direction:column;gap:6px;}
+.swatch-card{border-radius:8px;padding:7px 9px;border-width:1px;border-style:solid;}
+.swatch-card-name{font-size:10px;font-weight:600;margin-bottom:3px;}
+.swatch-pills{display:flex;gap:4px;}
+.swatch-pill{font-size:8px;font-weight:600;padding:1px 6px;border-radius:20px;}
+.swatch-btn{border-radius:7px;padding:5px 0;font-size:10px;font-weight:700;text-align:center;border:none;}
+.swatch-nav{display:flex;border-top-width:1px;border-top-style:solid;}
+.swatch-nav-item{flex:1;text-align:center;padding:4px 2px 6px;font-size:8px;font-weight:600;}
+.swatch-nav-icon{font-size:12px;display:block;margin-bottom:1px;}
+
 html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--brown);overflow:hidden;}
 #app{height:100vh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;position:relative;overflow:hidden;}
 
@@ -442,6 +481,10 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
       </div>
       <div class="settings-body">
         <div class="settings-section">
+          <div class="settings-section-title">Appearance</div>
+          <div id="theme-grid-wrap"></div>
+        </div>
+        <div class="settings-section">
           <div class="settings-section-title">Data</div>
           <div class="settings-card">
             <div class="settings-row" id="btn-export">
@@ -686,6 +729,7 @@ let pickerCatFilter = 'Dinner'; // default to dinner in picker
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', function() {
+  loadTheme();
   bindEvents();
   const saved = localStorage.getItem(CONFIG_KEY);
   if (saved) {
@@ -735,6 +779,7 @@ function switchTab(name) {
   document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab===name); });
   document.querySelectorAll('.tab-screen').forEach(function(s){ s.classList.toggle('hidden', s.id!=='tab-'+name); });
   if (name==='planner') renderPlanner();
+  if (name==='settings') buildThemeGrid();
 }
 
 // ── FIREBASE ──
@@ -1449,6 +1494,97 @@ function exportRecipes() {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   URL.revokeObjectURL(url);
   showToast('Exported '+recipes.length+' recipes!');
+}
+
+// ── THEMES ──
+const THEMES = [
+  {
+    id: 'rustic', name: 'Rustic', emoji: '🍂', sub: 'Warm terracotta',
+    cream:'#FBF7F0', card:'#FFFCF8', brown:'#3E2C1C', warm:'#7C5C3E',
+    accent:'#C0623A', accentL:'#F5E6DC', tag:'#EEE5D8', muted:'#9E8873',
+    border:'rgba(124,92,62,0.15)', white:'#fff'
+  },
+  {
+    id: 'midnight', name: 'Midnight', emoji: '🌙', sub: 'Deep dark mode',
+    cream:'#0F1117', card:'#1C1B26', brown:'#E8E0F0', warm:'#9B8FCC',
+    accent:'#7C6FC4', accentL:'#2A2840', tag:'#2A2840', muted:'#6B6880',
+    border:'rgba(180,170,220,0.12)', white:'#1C1B26'
+  },
+  {
+    id: 'obsidian', name: 'Obsidian', emoji: '🔥', sub: 'Dark + warm amber',
+    cream:'#121212', card:'#1E1C18', brown:'#F0EDE8', warm:'#C8A96A',
+    accent:'#C8960A', accentL:'#2E2A1E', tag:'#2E2A1E', muted:'#7A7060',
+    border:'rgba(220,160,60,0.15)', white:'#1E1C18'
+  },
+  {
+    id: 'sage', name: 'Sage', emoji: '🌿', sub: 'Fresh garden green',
+    cream:'#F2F5F0', card:'#FAFCF8', brown:'#1F2E1F', warm:'#4A7A50',
+    accent:'#3D7A4A', accentL:'#DFF0DC', tag:'#DFF0DC', muted:'#7A9478',
+    border:'rgba(58,90,58,0.15)', white:'#FAFCF8'
+  },
+];
+
+const THEME_KEY = 'rb_theme';
+let activeTheme = 'rustic';
+
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_KEY) || 'rustic';
+  applyTheme(saved, false);
+}
+
+function applyTheme(themeId, save) {
+  activeTheme = themeId;
+  // Remove all theme classes
+  document.body.classList.remove('theme-midnight','theme-obsidian','theme-sage');
+  if (themeId !== 'rustic') document.body.classList.add('theme-'+themeId);
+  if (save) localStorage.setItem(THEME_KEY, themeId);
+  // Update meta theme-color
+  const t = THEMES.find(function(x){ return x.id===themeId; });
+  if (t) {
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', t.accent);
+  }
+  // Rebuild theme grid if settings is visible
+  buildThemeGrid();
+}
+
+function buildThemeGrid() {
+  const wrap = document.getElementById('theme-grid-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const grid = document.createElement('div');
+  grid.className = 'theme-grid';
+  THEMES.forEach(function(t) {
+    const swatch = document.createElement('div');
+    swatch.className = 'theme-swatch' + (activeTheme===t.id?' active':'');
+    swatch.innerHTML =
+      '<div class="swatch-top" style="background:'+t.cream+';color:'+t.brown+'">'+
+        '<div class="swatch-name">'+t.emoji+' '+t.name+'</div>'+
+        '<div class="swatch-sub" style="color:'+t.muted+'">'+t.sub+'</div>'+
+      '</div>'+
+      '<div class="swatch-body" style="background:'+t.cream+'">'+
+        '<div class="swatch-card" style="background:'+t.card+';border-color:'+t.border+'">'+
+          '<div class="swatch-card-name" style="color:'+t.brown+'">🥩 Sunday Braise</div>'+
+          '<div class="swatch-pills">'+
+            '<span class="swatch-pill" style="background:'+t.tag+';color:'+t.warm+'">dinner</span>'+
+            '<span class="swatch-pill" style="background:'+t.tag+';color:'+t.warm+'">pork</span>'+
+          '</div>'+
+        '</div>'+
+        '<div class="swatch-btn" style="background:'+t.accent+';color:'+(t.id==='obsidian'?t.cream:'#fff')+'">+ Add Recipe</div>'+
+      '</div>'+
+      '<div class="swatch-nav" style="background:'+t.card+';border-top-color:'+t.border+'">'+
+        '<div class="swatch-nav-item" style="color:'+t.accent+'"><span class="swatch-nav-icon">🍳</span>Recipes</div>'+
+        '<div class="swatch-nav-item" style="color:'+t.muted+';opacity:0.5"><span class="swatch-nav-icon">📅</span>Planner</div>'+
+        '<div class="swatch-nav-item" style="color:'+t.muted+';opacity:0.5"><span class="swatch-nav-icon">🛒</span>Grocery</div>'+
+        '<div class="swatch-nav-item" style="color:'+t.muted+';opacity:0.5"><span class="swatch-nav-icon">⚙️</span>Settings</div>'+
+      '</div>';
+    swatch.addEventListener('click', function() {
+      applyTheme(t.id, true);
+      showToast(t.emoji+' '+t.name+' theme applied');
+    });
+    grid.appendChild(swatch);
+  });
+  wrap.appendChild(grid);
 }
 
 // ── TOAST / BANNER ──
