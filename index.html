@@ -797,6 +797,7 @@ function openDetail(id) {
 
   document.getElementById('home-screen').classList.add('slide-left');
   document.getElementById('detail-screen').classList.remove('hidden');
+  document.getElementById('detail-screen').classList.remove('slide-left');
 }
 
 function goHome() {
@@ -994,9 +995,19 @@ async function saveForm() {
   const wasEditing = editingId;
   const wasViewing = currentId;
   closeForm();
-  await saveRecipe(data);
-  if (wasEditing && wasViewing === wasEditing) openDetail(wasEditing);
+  // Update local array immediately so openDetail has fresh data without waiting for Firestore
+  const idx = recipes.findIndex(function(x) { return x.id === data.id; });
+  if (idx !== -1) recipes[idx] = data; else recipes.unshift(data);
+  // Navigate before the async save so there's no blank screen
+  if (wasEditing && wasViewing === wasEditing) {
+    openDetail(wasEditing);
+  } else if (!wasEditing) {
+    buildCategoryPills();
+    buildTagChips();
+    renderList();
+  }
   showToast(wasEditing ? 'Recipe updated!' : 'Recipe saved!');
+  await saveRecipe(data);
 }
 
 function buildEmojiGrid(selected) {
