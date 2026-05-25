@@ -991,10 +991,12 @@ async function saveForm() {
     notes: document.getElementById('f-notes').value.trim(),
     createdAt: existing ? existing.createdAt : Date.now()
   };
+  const wasEditing = editingId;
+  const wasViewing = currentId;
   closeForm();
   await saveRecipe(data);
-  if (editingId && currentId === editingId) openDetail(editingId);
-  showToast(editingId ? 'Recipe updated!' : 'Recipe saved!');
+  if (wasEditing && wasViewing === wasEditing) openDetail(wasEditing);
+  showToast(wasEditing ? 'Recipe updated!' : 'Recipe saved!');
 }
 
 function buildEmojiGrid(selected) {
