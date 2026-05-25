@@ -217,6 +217,21 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
 .slot-recipe-time{font-size:11px;color:var(--muted);}
 .slot-clear{width:28px;height:28px;border-radius:50%;border:none;background:rgba(192,98,58,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 
+/* ── SLOT TYPE PICKER ── */
+.slot-type-overlay{position:fixed;inset:0;background:rgba(62,44,28,0.4);z-index:160;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.slot-type-overlay.open{opacity:1;pointer-events:all;}
+.slot-type-sheet{background:var(--cream);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding:20px 20px 40px;transform:translateY(100%);transition:transform 0.3s cubic-bezier(.4,0,.2,1);}
+.slot-type-overlay.open .slot-type-sheet{transform:translateY(0);}
+.slot-type-title{font-family:"Lora",serif;font-size:17px;font-weight:600;color:var(--brown);margin-bottom:14px;}
+.slot-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.slot-type-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--card);border:1.5px solid var(--border);border-radius:12px;cursor:pointer;transition:all 0.15s;}
+.slot-type-btn:active{background:var(--accent-l);border-color:var(--accent);}
+.slot-type-btn.disabled{opacity:0.35;pointer-events:none;}
+.slot-type-emoji{font-size:20px;}
+.slot-type-label{font-size:13px;font-weight:600;color:var(--brown);}
+.btn-add-slot{display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px dashed var(--border);border-radius:10px;background:none;cursor:pointer;font-family:"DM Sans",sans-serif;font-size:12px;font-weight:600;color:var(--muted);margin:8px 14px 12px;transition:all 0.15s;width:calc(100% - 28px);}
+.btn-add-slot:active{background:var(--accent-l);border-color:var(--accent);color:var(--accent);}
+
 /* ── RECIPE PICKER MODAL ── */
 .picker-overlay{position:fixed;inset:0;background:rgba(62,44,28,0.5);z-index:150;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.3s;}
 .picker-overlay.open{opacity:1;pointer-events:all;}
@@ -598,6 +613,14 @@ Optional notes</code>
     </div>
   </div>
 
+  <!-- SLOT TYPE PICKER -->
+  <div class="slot-type-overlay" id="slot-type-overlay">
+    <div class="slot-type-sheet">
+      <div class="slot-type-title" id="slot-type-title">Add a meal slot</div>
+      <div class="slot-type-grid" id="slot-type-grid"></div>
+    </div>
+  </div>
+
   <!-- RECIPE PICKER MODAL (for planner) -->
   <div class="picker-overlay" id="picker-overlay">
     <div class="picker-sheet">
@@ -698,6 +721,7 @@ function bindEvents() {
   document.getElementById('btn-week-next').addEventListener('click', function(){ plannerWeekOffset++; renderPlanner(); });
   document.getElementById('btn-planner-today').addEventListener('click', function(){ plannerWeekOffset=0; renderPlanner(); });
   document.getElementById('btn-close-picker').addEventListener('click', closePicker);
+  document.getElementById('slot-type-overlay').addEventListener('click', function(e){ if(e.target===this) closeSlotTypePicker(); });
   document.getElementById('picker-overlay').addEventListener('click', function(e){ if(e.target===this) closePicker(); });
   document.getElementById('picker-search').addEventListener('input', renderPickerList);
   document.querySelectorAll('.nav-tab').forEach(function(tab){
@@ -853,6 +877,49 @@ function renderPlanner() {
   });
 }
 
+// ── SLOT TYPE CONFIG ──
+// Slot types: single = only one per day, multi = unlimited
+const SLOT_TYPES = [
+  {id:'dinner',   label:'Dinner',     emoji:'🍽', cat:'Dinner',     multi:false},
+  {id:'side',     label:'Side',       emoji:'🥗', cat:'Side',       multi:true},
+  {id:'dessert',  label:'Dessert',    emoji:'🍰', cat:'Dessert',    multi:true},
+  {id:'breakfast',label:'Breakfast',  emoji:'🌅', cat:'Breakfast',  multi:false},
+  {id:'lunch',    label:'Lunch',      emoji:'🥪', cat:'Lunch',      multi:false},
+  {id:'snack',    label:'Snack',      emoji:'🍎', cat:'Snack',      multi:false},
+  {id:'drink',    label:'Drink',      emoji:'🍹', cat:'Drink',      multi:false},
+  {id:'batchcook',label:'Batch Cook', emoji:'🥘', cat:'Batch Cook', multi:false},
+];
+
+// Slot display order
+const SLOT_ORDER = ['breakfast','lunch','dinner','side','dessert','snack','drink','batchcook'];
+
+function getSlotType(id) { return SLOT_TYPES.find(function(t){ return t.id===id; }); }
+
+// dayData.slots = [ {type:'dinner', recipeId:'...'}, {type:'side', recipeId:'...'}, ... ]
+// dinner slot always exists (added if missing)
+
+function normalizeDaySlots(dayData) {
+  var slots = (dayData && dayData.slots) ? dayData.slots.slice() : [];
+  // Ensure dinner slot always present
+  if (!slots.find(function(s){ return s.type==='dinner'; })) {
+    slots.unshift({type:'dinner', recipeId:null});
+  }
+  // Sort by SLOT_ORDER, then by insertion order for multiples
+  slots.sort(function(a,b){
+    var ai = SLOT_ORDER.indexOf(a.type); var bi = SLOT_ORDER.indexOf(b.type);
+    if (ai===bi) return 0;
+    return (ai===-1?99:ai) - (bi===-1?99:bi);
+  });
+  return slots;
+}
+
+function labelForSlot(type, indexAmongType) {
+  var st = getSlotType(type);
+  if (!st) return type;
+  if (st.multi) return st.emoji+' '+st.label+' '+(indexAmongType+1);
+  return st.emoji+' '+st.label;
+}
+
 function renderPlannerDays(monday, weekData, wk) {
   const list = document.getElementById('planner-list');
   list.innerHTML = '';
@@ -860,9 +927,7 @@ function renderPlannerDays(monday, weekData, wk) {
     const d = new Date(monday); d.setDate(monday.getDate()+i);
     const ds = dateToString(d);
     const isT = isToday(d);
-    const dayData = weekData[ds] || {};
-    const dinnerRecipeId = dayData.dinner || null;
-    const dinnerRecipe = dinnerRecipeId ? recipes.find(function(r){ return r.id===dinnerRecipeId; }) : null;
+    const slots = normalizeDaySlots(weekData[ds]);
 
     const card = document.createElement('div');
     card.className = 'day-card' + (isT?' today':'');
@@ -873,60 +938,170 @@ function renderPlannerDays(monday, weekData, wk) {
     hdr.innerHTML = '<div style="display:flex;align-items:center"><span class="day-name">'+DAYS[i]+'</span>'+(isT?'<span class="today-badge">Today</span>':'')+'</div><span class="day-date">'+MONTHS[d.getMonth()]+' '+d.getDate()+'</span>';
     card.appendChild(hdr);
 
-    // Dinner slot
-    const slot = document.createElement('div');
-    slot.className = 'meal-slot';
-    const slotLabel = document.createElement('div');
-    slotLabel.className = 'meal-slot-label';
-    slotLabel.textContent = '🍽 Dinner';
-    slot.appendChild(slotLabel);
+    // Render each slot
+    var typeCounters = {};
+    slots.forEach(function(slotObj, slotIdx) {
+      var type = slotObj.type;
+      if (!typeCounters[type]) typeCounters[type] = 0;
+      var countIdx = typeCounters[type]++;
+      var label = labelForSlot(type, countIdx);
+      var r = slotObj.recipeId ? recipes.find(function(x){ return x.id===slotObj.recipeId; }) : null;
+      var st = getSlotType(type);
+      var isDinner = type==='dinner';
 
-    if (dinnerRecipe) {
-      const filled = document.createElement('div');
-      filled.className = 'slot-filled';
-      filled.innerHTML = '<div class="slot-recipe-emoji">'+dinnerRecipe.emoji+'</div><div class="slot-recipe-info"><div class="slot-recipe-name">'+dinnerRecipe.name+'</div><div class="slot-recipe-time">⏱ '+dinnerRecipe.time+' min · 👤 '+dinnerRecipe.servings+' servings</div></div>';
-      const clearBtn = document.createElement('button');
-      clearBtn.className = 'slot-clear';
-      clearBtn.textContent = '×';
-      clearBtn.title = 'Clear';
-      (function(dateStr, weekData2, wk2){
-        clearBtn.addEventListener('click', function(e){
-          e.stopPropagation();
-          const wd = Object.assign({}, weekData2);
-          if (wd[dateStr]) { delete wd[dateStr].dinner; if (!Object.keys(wd[dateStr]).length) delete wd[dateStr]; }
-          savePlannerWeek(wk2, wd).then(function(){ renderPlannerDays(getMondayOfWeek(plannerWeekOffset), wd, wk2); });
-        });
-        filled.addEventListener('click', function(){
-          openPicker(dateStr, 'dinner', weekData2, wk2);
-        });
-      })(ds, weekData, wk);
-      filled.appendChild(clearBtn);
-      slot.appendChild(filled);
-    } else {
-      const empty = document.createElement('div');
-      empty.className = 'slot-empty';
-      empty.innerHTML = '<span style="font-size:20px;opacity:0.35">+</span><span class="slot-empty-text">Add dinner...</span>';
-      (function(dateStr, weekData2, wk2){
-        empty.addEventListener('click', function(){
-          openPicker(dateStr, 'dinner', weekData2, wk2);
-        });
-      })(ds, weekData, wk);
-      slot.appendChild(empty);
-    }
-    card.appendChild(slot);
+      var slotEl = document.createElement('div');
+      slotEl.className = 'meal-slot';
+
+      var slotLabelEl = document.createElement('div');
+      slotLabelEl.className = 'meal-slot-label';
+      slotLabelEl.textContent = label;
+      slotEl.appendChild(slotLabelEl);
+
+      if (r) {
+        var filled = document.createElement('div');
+        filled.className = 'slot-filled';
+        filled.innerHTML = '<div class="slot-recipe-emoji">'+r.emoji+'</div><div class="slot-recipe-info"><div class="slot-recipe-name">'+r.name+'</div><div class="slot-recipe-time">⏱ '+r.time+' min · 👥 '+r.servings+' servings</div></div>';
+        var clearBtn = document.createElement('button');
+        clearBtn.className = 'slot-clear';
+        clearBtn.textContent = '×';
+        clearBtn.title = isDinner ? 'Clear recipe' : 'Remove slot';
+        (function(ds2, si, wd2, wk2, isDinner2){
+          clearBtn.addEventListener('click', function(e){
+            e.stopPropagation();
+            var newSlots = normalizeDaySlots(wd2[ds2]).filter(function(s,idx){ return idx!==si; });
+            // Always keep dinner slot (empty it instead of removing)
+            if (isDinner2) newSlots = newSlots.map(function(s,idx){ return idx===0&&s.type==='dinner'?{type:'dinner',recipeId:null}:s; });
+            if (!newSlots.find(function(s){ return s.type==='dinner'; })) newSlots.unshift({type:'dinner',recipeId:null});
+            var newWd = Object.assign({},wd2);
+            newWd[ds2] = {slots:newSlots};
+            savePlannerWeek(wk2,newWd).then(function(){ renderPlannerDays(getMondayOfWeek(plannerWeekOffset),newWd,wk2); });
+          });
+          filled.addEventListener('click', function(){
+            openPicker(ds2, si, wd2, wk2);
+          });
+        })(ds, slotIdx, weekData, wk, isDinner);
+        filled.appendChild(clearBtn);
+        slotEl.appendChild(filled);
+      } else {
+        var empty = document.createElement('div');
+        empty.className = 'slot-empty';
+        var emptyLabel = isDinner ? 'Add dinner...' : 'Add '+((st&&st.label)||type).toLowerCase()+'...';
+        empty.innerHTML = '<span style="font-size:20px;opacity:0.35">+</span><span class="slot-empty-text">'+emptyLabel+'</span>';
+        var removeBtn = null;
+        if (!isDinner) {
+          removeBtn = document.createElement('button');
+          removeBtn.className = 'slot-clear';
+          removeBtn.textContent = '×';
+          removeBtn.title = 'Remove slot';
+          (function(ds2, si, wd2, wk2){
+            removeBtn.addEventListener('click', function(e){
+              e.stopPropagation();
+              var newSlots = normalizeDaySlots(wd2[ds2]).filter(function(s,idx){ return idx!==si; });
+              if (!newSlots.find(function(s){ return s.type==='dinner'; })) newSlots.unshift({type:'dinner',recipeId:null});
+              var newWd = Object.assign({},wd2);
+              newWd[ds2] = {slots:newSlots};
+              savePlannerWeek(wk2,newWd).then(function(){ renderPlannerDays(getMondayOfWeek(plannerWeekOffset),newWd,wk2); });
+            });
+          })(ds, slotIdx, weekData, wk);
+          empty.appendChild(removeBtn);
+        }
+        (function(ds2, si, wd2, wk2){
+          empty.addEventListener('click', function(e){
+            if (e.target===removeBtn) return;
+            openPicker(ds2, si, wd2, wk2);
+          });
+        })(ds, slotIdx, weekData, wk);
+        slotEl.appendChild(empty);
+      }
+      card.appendChild(slotEl);
+    });
+
+    // + Add slot button
+    var addSlotBtn = document.createElement('button');
+    addSlotBtn.className = 'btn-add-slot';
+    addSlotBtn.innerHTML = '<span style="font-size:16px">+</span> Add slot';
+    (function(ds2, wd2, wk2, slots2){
+      addSlotBtn.addEventListener('click', function(){
+        openSlotTypePicker(ds2, wd2, wk2, slots2);
+      });
+    })(ds, weekData, wk, slots);
+    card.appendChild(addSlotBtn);
     list.appendChild(card);
   }
 }
 
+// ── SLOT TYPE PICKER ──
+var _slotPickerState = {};
+
+function openSlotTypePicker(dateStr, weekData, wk, currentSlots) {
+  _slotPickerState = {dateStr:dateStr, weekData:weekData, wk:wk, currentSlots:currentSlots};
+  var d = new Date(dateStr+'T12:00:00');
+  var dayIdx = d.getDay()===0?6:d.getDay()-1;
+  document.getElementById('slot-type-title').textContent = 'Add slot — '+DAYS[dayIdx];
+  var grid = document.getElementById('slot-type-grid');
+  grid.innerHTML = '';
+
+  // Count existing slot types
+  var typeCounts = {};
+  currentSlots.forEach(function(s){ typeCounts[s.type]=(typeCounts[s.type]||0)+1; });
+
+  SLOT_TYPES.forEach(function(st){
+    var btn = document.createElement('button');
+    btn.className = 'slot-type-btn';
+    // Single-type slots already at max: disable; dinner always disabled (always present)
+    var alreadyHas = typeCounts[st.id]||0;
+    var isDisabled = st.id==='dinner' || (!st.multi && alreadyHas>=1);
+    if (isDisabled) btn.classList.add('disabled');
+    btn.innerHTML = '<span class="slot-type-emoji">'+st.emoji+'</span><span class="slot-type-label">'+st.label+(st.multi&&alreadyHas>0?' ('+(alreadyHas+1)+')':'')+'</span>';
+    if (!isDisabled) {
+      btn.addEventListener('click', function(){
+        addSlotToDay(st.id);
+      });
+    }
+    grid.appendChild(btn);
+  });
+
+  document.getElementById('slot-type-overlay').classList.add('open');
+}
+
+function closeSlotTypePicker() {
+  document.getElementById('slot-type-overlay').classList.remove('open');
+}
+
+function addSlotToDay(slotType) {
+  closeSlotTypePicker();
+  var s = _slotPickerState;
+  var newSlots = s.currentSlots.slice();
+  newSlots.push({type:slotType, recipeId:null});
+  var newWd = Object.assign({}, s.weekData);
+  newWd[s.dateStr] = {slots:newSlots};
+  savePlannerWeek(s.wk, newWd).then(function(){
+    renderPlannerDays(getMondayOfWeek(plannerWeekOffset), newWd, s.wk);
+    // Auto-open recipe picker for the new slot
+    var newSlotIdx = normalizeDaySlots(newWd[s.dateStr]).findIndex(function(sl,idx){
+      // find last slot of this type
+      var count=0; var lastIdx=-1;
+      normalizeDaySlots(newWd[s.dateStr]).forEach(function(sl2,i2){ if(sl2.type===slotType){ lastIdx=i2; } });
+      return idx===lastIdx;
+    });
+    if (newSlotIdx>=0) openPicker(s.dateStr, newSlotIdx, newWd, s.wk);
+  });
+}
+
 // ── RECIPE PICKER ──
-function openPicker(dateStr, meal, weekData, wk) {
+function openPicker(dateStr, slotIndex, weekData, wk) {
   pickerSlotDate = dateStr;
-  pickerSlotMeal = meal;
-  pickerCatFilter = 'Dinner';
-  // Store weekData and wk for use when recipe is selected
+  pickerSlotMeal = slotIndex; // now an index into slots array
   openPicker._weekData = weekData;
   openPicker._wk = wk;
-  document.getElementById('picker-title').textContent = 'Choose '+DAYS[new Date(dateStr+'T12:00:00').getDay()===0?6:new Date(dateStr+'T12:00:00').getDay()-1]+' Dinner';
+  var slots = normalizeDaySlots(weekData[dateStr]);
+  var slotObj = slots[slotIndex] || {type:'dinner'};
+  var st = getSlotType(slotObj.type);
+  // Default cat filter to slot type's category
+  pickerCatFilter = st ? st.cat : '';
+  var d = new Date(dateStr+'T12:00:00');
+  var dayIdx = d.getDay()===0?6:d.getDay()-1;
+  document.getElementById('picker-title').textContent = 'Choose '+DAYS[dayIdx]+' '+(st?st.label:'Recipe');
   document.getElementById('picker-search').value = '';
   buildPickerCats();
   renderPickerList();
@@ -967,17 +1142,19 @@ function renderPickerList() {
   filtered.forEach(function(r){
     const item = document.createElement('div');
     item.className = 'picker-item';
-    item.innerHTML = '<div class="picker-item-emoji">'+r.emoji+'</div><div class="picker-item-info"><div class="picker-item-name">'+r.name+'</div><div class="picker-item-meta">⏱ '+r.time+' min · 👤 '+r.servings+' servings'+(r.tags&&r.tags.length?' · '+r.tags.slice(0,2).join(', '):'')+'</div></div>';
+    item.innerHTML = '<div class="picker-item-emoji">'+r.emoji+'</div><div class="picker-item-info"><div class="picker-item-name">'+r.name+'</div><div class="picker-item-meta">⏱ '+r.time+' min · 👥 '+r.servings+' servings'+(r.tags&&r.tags.length?' · '+r.tags.slice(0,2).join(', '):'')+'</div></div>';
     item.addEventListener('click', function(){ selectPickerRecipe(r.id); });
     list.appendChild(item);
   });
 }
 
 function selectPickerRecipe(recipeId) {
-  if (!pickerSlotDate||!pickerSlotMeal) return;
+  if (pickerSlotDate===null||pickerSlotMeal===null) return;
   const weekData = Object.assign({}, openPicker._weekData);
+  var slots = normalizeDaySlots(weekData[pickerSlotDate]);
+  if (slots[pickerSlotMeal]) slots[pickerSlotMeal].recipeId = recipeId;
   if (!weekData[pickerSlotDate]) weekData[pickerSlotDate] = {};
-  weekData[pickerSlotDate][pickerSlotMeal] = recipeId;
+  weekData[pickerSlotDate] = {slots:slots};
   const wk = openPicker._wk;
   savePlannerWeek(wk, weekData).then(function(){
     renderPlannerDays(getMondayOfWeek(plannerWeekOffset), weekData, wk);
