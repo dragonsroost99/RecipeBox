@@ -459,6 +459,7 @@ let parsedImport = null;
 let unsubscribe = null;
 let activeCategory = '';
 let activeTag = '';
+let isInitialized = false;
 
 // ── INIT ──
 window.addEventListener('DOMContentLoaded', function() {
@@ -559,7 +560,10 @@ function startListening() {
 
   // Safety timeout — escape loading screen if Firebase never responds
   const timeout = setTimeout(function() {
-    showScreen('home');
+    if (!isInitialized) {
+      isInitialized = true;
+      showScreen('home');
+    }
     setSyncState('error');
     showToast('Connection timed out — check Firebase rules');
     renderList();
@@ -573,17 +577,23 @@ function startListening() {
       snapshot.forEach(function(d) { recipes.push(Object.assign({}, d.data(), {id: d.id})); });
       recipes.sort(function(a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
       setSyncState('synced');
-      showScreen('home');
+      if (!isInitialized) {
+        isInitialized = true;
+        showScreen('home');
+        showInstallBanner();
+      }
       buildCategoryPills();
       buildTagChips();
       renderList();
-      showInstallBanner();
     },
     function(error) {
       clearTimeout(timeout);
       console.error('Firestore error:', error);
       setSyncState('error');
-      showScreen('home');
+      if (!isInitialized) {
+        isInitialized = true;
+        showScreen('home');
+      }
       showToast('Sync error — check connection');
       renderList();
     }
