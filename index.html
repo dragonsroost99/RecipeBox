@@ -238,6 +238,8 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
 .slot-recipe-emoji{font-size:22px;flex-shrink:0;}
 .slot-recipe-name{font-size:13px;font-weight:600;color:var(--brown);flex:1;line-height:1.3;}
 .slot-recipe-time{font-size:11px;color:var(--muted);}
+.slot-scale-btn{width:28px;height:28px;border-radius:50%;border:none;background:rgba(192,98,58,0.12);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:background 0.15s;}
+.slot-scale-btn:active{background:rgba(192,98,58,0.3);}
 .slot-clear{width:28px;height:28px;border-radius:50%;border:none;background:rgba(192,98,58,0.15);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
 .slot-type-overlay{position:fixed;inset:0;background:rgba(62,44,28,0.4);z-index:160;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .slot-type-overlay.open{opacity:1;pointer-events:all;}
@@ -533,9 +535,7 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
           <h1>🛒 Grocery List</h1>
           <div class="grocery-header-sub" id="grocery-header-sub">This week's meals</div>
         </div>
-        <div class="grocery-header-actions">
-          <button class="btn-circle btn-import-open" id="btn-grocery-scale" title="Adjust servings" style="font-size:16px;">⚖️</button>
-        </div>
+
       </div>
       <div class="grocery-week-bar">
         <div>
@@ -763,13 +763,16 @@ Optional notes</code>
     </div>
   </div>
 
-  <!-- SERVINGS SCALER MODAL -->
+  <!-- SLOT SERVINGS SCALER (per planner slot) -->
   <div class="scaler-overlay" id="scaler-overlay">
     <div class="scaler-sheet">
-      <div class="scaler-title">Adjust Servings</div>
-      <div class="scaler-sub">Scale ingredient amounts per recipe.</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div class="scaler-title" id="scaler-title">Adjust Servings</div>
+        <button class="btn-close" id="btn-close-scaler">×</button>
+      </div>
+      <div class="scaler-sub" id="scaler-sub">For grocery list scaling.</div>
       <div class="scaler-list" id="scaler-list"></div>
-      <button class="btn-apply-scale" id="btn-apply-scale">Apply & Regenerate List</button>
+      <button class="btn-apply-scale" id="btn-apply-scale">✓ Save & Update Grocery List</button>
     </div>
   </div>
 
@@ -952,8 +955,8 @@ function bindEvents() {
   document.getElementById('picker-overlay').addEventListener('click', function(e){ if(e.target===this) closePicker(); });
   document.getElementById('picker-search').addEventListener('input', renderPickerList);
   document.getElementById('btn-regenerate').addEventListener('click', generateGroceryList);
-  document.getElementById('btn-grocery-scale').addEventListener('click', openScaler);
   document.getElementById('btn-apply-scale').addEventListener('click', applyScale);
+  document.getElementById('btn-close-scaler').addEventListener('click', closeScaler);
   document.getElementById('scaler-overlay').addEventListener('click', function(e){ if(e.target===this) closeScaler(); });
   document.querySelectorAll('.nav-tab').forEach(function(tab){
     tab.addEventListener('click', function(){ switchTab(tab.dataset.tab); });
@@ -1369,65 +1372,85 @@ function addManualItem() {
   updateGroceryUI();
 }
 
-// ── SERVINGS SCALER ──
-function openScaler() {
-  if (!groceryWeekRecipes.length) { showToast('No recipes planned this week'); return; }
-  // Gather unique recipes
-  var seen = {};
-  var uniqueRecipes = [];
-  groceryWeekRecipes.forEach(function(e){
-    if (!seen[e.recipe.id]) { seen[e.recipe.id]=true; uniqueRecipes.push(e.recipe); }
-  });
-  // Init temp scale from current overrides or recipe defaults
+// ── SLOT SERVINGS SCALER ──
+var _scalerRecipe = null; // recipe being scaled
+
+function openSlotScaler(r) {
+  _scalerRecipe = r;
+  var current = groceryServingsScale[r.id] !== undefined ? groceryServingsScale[r.id] : r.servings;
   groceryScalerTemp = {};
-  uniqueRecipes.forEach(function(r){
-    groceryScalerTemp[r.id] = groceryServingsScale[r.id] !== undefined ? groceryServingsScale[r.id] : r.servings;
-  });
-  renderScalerList(uniqueRecipes);
+  groceryScalerTemp[r.id] = current;
+  document.getElementById('scaler-title').textContent = r.emoji+' '+r.name;
+  document.getElementById('scaler-sub').textContent = 'Original recipe: '+r.servings+' servings. Adjusted amount used for grocery list.';
+  renderScalerList(r);
   document.getElementById('scaler-overlay').classList.add('open');
 }
 
-function renderScalerList(uniqueRecipes) {
+function renderScalerList(r) {
   var list = document.getElementById('scaler-list');
+  var current = groceryScalerTemp[r.id] || r.servings;
+  var isChanged = current !== r.servings;
   list.innerHTML = '';
-  uniqueRecipes.forEach(function(r){
-    var current = groceryScalerTemp[r.id] || r.servings;
-    var row = document.createElement('div');
-    row.className = 'scaler-row';
-    row.innerHTML =
-      '<div class="scaler-recipe">'+
-        '<span class="scaler-emoji">'+r.emoji+'</span>'+
-        '<div><div class="scaler-name">'+r.name+'</div><div class="scaler-orig">Original: '+r.servings+' servings</div></div>'+
-      '</div>'+
-      '<div class="scaler-controls">'+
-        '<button class="scaler-btn" data-id="'+r.id+'" data-dir="-1">−</button>'+
-        '<span class="scaler-val" id="scaler-val-'+r.id+'">'+current+'</span>'+
-        '<button class="scaler-btn" data-id="'+r.id+'" data-dir="1">+</button>'+
-      '</div>';
-    row.querySelectorAll('.scaler-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var id = btn.dataset.id;
-        var dir = parseInt(btn.dataset.dir);
-        groceryScalerTemp[id] = Math.max(1, (groceryScalerTemp[id]||1) + dir);
-        document.getElementById('scaler-val-'+id).textContent = groceryScalerTemp[id];
-      });
+  var row = document.createElement('div');
+  row.className = 'scaler-row';
+  row.innerHTML =
+    '<div class="scaler-recipe">'+
+      '<span class="scaler-emoji">'+r.emoji+'</span>'+
+      '<div><div class="scaler-name">'+r.name+'</div>'+
+      '<div class="scaler-orig" id="scaler-change-label">'+(isChanged?'Changed from '+r.servings+' → '+current:'Original servings')+'</div></div>'+
+    '</div>'+
+    '<div class="scaler-controls">'+
+      '<button class="scaler-btn" id="scaler-minus">−</button>'+
+      '<span class="scaler-val" id="scaler-val">'+current+'</span>'+
+      '<button class="scaler-btn" id="scaler-plus">+</button>'+
+    '</div>';
+  list.appendChild(row);
+
+  // Reset button if changed
+  if (isChanged) {
+    var resetRow = document.createElement('div');
+    resetRow.style.cssText = 'text-align:center;margin-top:6px;';
+    var resetBtn = document.createElement('button');
+    resetBtn.style.cssText = 'background:none;border:none;font-size:12px;color:var(--muted);cursor:pointer;text-decoration:underline;';
+    resetBtn.textContent = 'Reset to original ('+r.servings+')';
+    resetBtn.addEventListener('click', function(){
+      groceryScalerTemp[r.id] = r.servings;
+      renderScalerList(r);
     });
-    list.appendChild(row);
+    resetRow.appendChild(resetBtn);
+    list.appendChild(resetRow);
+  }
+
+  document.getElementById('scaler-minus').addEventListener('click', function(){
+    groceryScalerTemp[r.id] = Math.max(1, (groceryScalerTemp[r.id]||1) - 1);
+    renderScalerList(r);
+  });
+  document.getElementById('scaler-plus').addEventListener('click', function(){
+    groceryScalerTemp[r.id] = (groceryScalerTemp[r.id]||1) + 1;
+    renderScalerList(r);
   });
 }
 
 function closeScaler() {
   document.getElementById('scaler-overlay').classList.remove('open');
+  _scalerRecipe = null;
 }
 
 function applyScale() {
-  // Commit temp scale to main scale
-  Object.assign(groceryServingsScale, groceryScalerTemp);
+  if (!_scalerRecipe) return;
+  var r = _scalerRecipe;
+  var newVal = groceryScalerTemp[r.id];
+  if (newVal === r.servings) {
+    delete groceryServingsScale[r.id]; // back to default, no override needed
+  } else {
+    groceryServingsScale[r.id] = newVal;
+  }
   closeScaler();
-  // Rebuild items with new scale
-  groceryItems = groceryItems.filter(function(i){ return i.manual; }); // keep manuals
-  buildGroceryItems();
-  showToast('Servings updated');
+  // Re-render planner to show updated servings badge
+  renderPlanner();
+  // Reset grocery list so it regenerates fresh next visit
+  groceryItems = groceryItems.filter(function(i){ return i.manual; });
+  showToast('Servings set to '+newVal+' — grocery list updated');
 }
 
 // ── PLANNER ──
@@ -1502,7 +1525,9 @@ function renderPlannerDays(monday, weekData, wk) {
       var slotLabelEl=document.createElement('div'); slotLabelEl.className='meal-slot-label'; slotLabelEl.textContent=label; slotEl.appendChild(slotLabelEl);
       if (r) {
         var filled=document.createElement('div'); filled.className='slot-filled';
-        filled.innerHTML='<div class="slot-recipe-emoji">'+r.emoji+'</div><div class="slot-recipe-info"><div class="slot-recipe-name">'+r.name+'</div><div class="slot-recipe-time">⏱ '+r.time+' min · 👥 '+r.servings+' servings</div></div>';
+        filled.innerHTML='<div class="slot-recipe-emoji">'+r.emoji+'</div><div class="slot-recipe-info"><div class="slot-recipe-name">'+r.name+'</div><div class="slot-recipe-time">⏱ '+r.time+' min · 👥 '+(groceryServingsScale[r.id]!==undefined?groceryServingsScale[r.id]:r.servings)+' servings'+(groceryServingsScale[r.id]!==undefined&&groceryServingsScale[r.id]!==r.servings?' ⚖️':'')+' </div></div>';
+        var scaleBtn=document.createElement('button'); scaleBtn.className='slot-scale-btn'; scaleBtn.title='Adjust servings'; scaleBtn.textContent='⚖️';
+        (function(r2){ scaleBtn.addEventListener('click',function(e){ e.stopPropagation(); openSlotScaler(r2); }); })(r);
         var clearBtn=document.createElement('button'); clearBtn.className='slot-clear'; clearBtn.textContent='×'; clearBtn.title=isDinner?'Clear recipe':'Remove slot';
         (function(ds2,si,wd2,wk2,isDinner2){
           clearBtn.addEventListener('click',function(e){
@@ -1515,7 +1540,7 @@ function renderPlannerDays(monday, weekData, wk) {
           });
           filled.addEventListener('click',function(){ openPicker(ds2,si,wd2,wk2); });
         })(ds,slotIdx,weekData,wk,isDinner);
-        filled.appendChild(clearBtn); slotEl.appendChild(filled);
+        filled.appendChild(scaleBtn); filled.appendChild(clearBtn); slotEl.appendChild(filled);
       } else {
         var empty=document.createElement('div'); empty.className='slot-empty';
         var emptyLabel=isDinner?'Add dinner...':'Add '+((st&&st.label)||type).toLowerCase()+'...';
