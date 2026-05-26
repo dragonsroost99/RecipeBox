@@ -348,6 +348,14 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:var(--white);padding:10px 22px;border-radius:24px;font-size:13px;font-weight:500;z-index:400;opacity:0;transition:opacity 0.25s,transform 0.25s;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
+/* ── DETAIL SERVINGS STEPPER ── */
+.servings-stepper{display:flex;align-items:center;justify-content:center;gap:10px;}
+.stepper-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;color:var(--warm);transition:all 0.15s;flex-shrink:0;}
+.stepper-btn:active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.stepper-val{font-size:22px;font-weight:700;color:var(--brown);min-width:28px;text-align:center;}
+.stat-lbl-scaled{font-size:10px;color:var(--accent);font-weight:600;margin-top:1px;}
+.ingredient-scaled{color:var(--accent);font-weight:600;}
+
 /* ── GROCERY LIST ── */
 .grocery-header{padding:16px 20px 0;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0;}
 .grocery-header-text h1{font-family:'Lora',serif;font-size:26px;font-weight:600;letter-spacing:-0.5px;color:var(--brown);}
@@ -894,6 +902,8 @@ let pickerCatFilter = 'Dinner';
 // groceryItems: [{id, name, aisleId, checked, source, manual}]
 // groceryServingsScale: {recipeId: multiplier}  (multiplier = adjusted/original)
 // groceryScalerTemp: temp values while scaler is open
+let detailServings = null; // temp scaler for current detail view
+
 let groceryItems = [];
 let groceryServingsScale = {}; // recipeId -> servings override
 let groceryScalerTemp = {};
@@ -1705,22 +1715,76 @@ function renderRecipeList(){
 function openDetail(id){
   const r=recipes.find(function(x){ return x.id===id; }); if (!r) return;
   currentId=id;
+  detailServings=r.servings; // reset scaler on each open
+  renderDetail(r);
+  document.getElementById('detail-screen').classList.remove('hidden');
+  document.getElementById('detail-screen').classList.remove('slide-left');
+}
+
+function renderDetail(r){
+  const scale = detailServings / r.servings;
+  const isScaled = detailServings !== r.servings;
   const cat=r.category||''; const catObj=cat?CATEGORIES.find(function(c){ return c.id===cat; }):null;
+
   let html='<div class="detail-hero"><div class="detail-emoji">'+r.emoji+'</div>';
   if (catObj) html+='<div style="display:flex;justify-content:center;margin-bottom:10px"><span class="card-cat" style="font-size:12px;padding:4px 12px">'+catObj.emoji+' '+catObj.label+'</span></div>';
   html+='<div class="detail-title">'+r.name+'</div>';
   if (r.tags&&r.tags.length) html+='<div class="detail-tags">'+r.tags.map(function(t){ return '<span class="tag">'+t+'</span>'; }).join('')+'</div>';
-  html+='<div class="detail-stats"><div class="stat-box"><div class="stat-val">'+r.time+'</div><div class="stat-lbl">minutes</div></div><div class="stat-box"><div class="stat-val">'+r.servings+'</div><div class="stat-lbl">servings</div></div></div></div>';
-  if (r.ingredients&&r.ingredients.length) html+='<div class="detail-section"><div class="section-title">Ingredients</div>'+r.ingredients.map(function(ing){ return '<div class="ingredient-item"><div class="bullet"></div>'+ing+'</div>'; }).join('')+'</div>';
-  if (r.steps&&r.steps.length) html+='<div class="detail-section"><div class="section-title">Instructions</div>'+r.steps.map(function(s,i){ return '<div class="step-item"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+s+'</div></div>'; }).join('')+'</div>';
+
+  // Stat boxes — time static, servings is live stepper
+  html+='<div class="detail-stats">'+
+    '<div class="stat-box"><div class="stat-val">'+r.time+'</div><div class="stat-lbl">minutes</div></div>'+
+    '<div class="stat-box">'+
+      '<div class="servings-stepper">'+
+        '<button class="stepper-btn" id="detail-serv-minus">−</button>'+
+        '<span class="stepper-val" id="detail-serv-val">'+detailServings+'</span>'+
+        '<button class="stepper-btn" id="detail-serv-plus">+</button>'+
+      '</div>'+
+      '<div class="'+(isScaled?'stat-lbl-scaled':'stat-lbl')+'" id="detail-serv-lbl">'+
+        (isScaled?'scaled from '+r.servings:'servings')+
+      '</div>'+
+    '</div>'+
+  '</div></div>';
+
+  // Ingredients — scaled
+  if (r.ingredients&&r.ingredients.length){
+    html+='<div class="detail-section"><div class="section-title">Ingredients</div>';
+    r.ingredients.forEach(function(ing){
+      var display = isScaled ? scaleIngredientText(ing, scale) : ing;
+      var changed = isScaled && display !== ing;
+      html+='<div class="ingredient-item"><div class="bullet"></div><span class="'+(changed?'ingredient-scaled':'')+'">'+(changed?display:ing)+'</span></div>';
+    });
+    html+='</div>';
+  }
+
+  if (r.steps&&r.steps.length){
+    html+='<div class="detail-section"><div class="section-title">Instructions</div>'+
+      r.steps.map(function(s,i){ return '<div class="step-item"><div class="step-num">'+(i+1)+'</div><div class="step-text">'+s+'</div></div>'; }).join('')+
+    '</div>';
+  }
   if (r.notes) html+='<div class="detail-section"><div class="section-title">Notes</div><div class="notes-box">'+r.notes+'</div></div>';
   html+='<div class="share-bar"><button class="btn-share" id="detail-share-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share Recipe</button></div><div style="height:20px"></div>';
+
   document.getElementById('detail-content').innerHTML=html;
-  document.getElementById('detail-share-btn').addEventListener('click',function(){ shareRecipe(id); });
-  document.getElementById('detail-screen').classList.remove('hidden');
-  document.getElementById('detail-screen').classList.remove('slide-left');
+
+  // Stepper events
+  document.getElementById('detail-serv-minus').addEventListener('click', function(){
+    if (detailServings<=1) return;
+    detailServings--;
+    renderDetail(r);
+  });
+  document.getElementById('detail-serv-plus').addEventListener('click', function(){
+    detailServings++;
+    renderDetail(r);
+  });
+  document.getElementById('detail-share-btn').addEventListener('click',function(){ shareRecipe(r.id); });
 }
-function closeDetail(){ document.getElementById('detail-screen').classList.add('hidden'); currentId=null; }
+
+function closeDetail(){
+  document.getElementById('detail-screen').classList.add('hidden');
+  currentId=null;
+  detailServings=null;
+}
 async function deleteCurrent(){
   if (!currentId) return;
   const r=recipes.find(function(x){ return x.id===currentId; });
