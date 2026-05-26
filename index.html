@@ -776,6 +776,15 @@ function bindEvents() {
 // ── TABS ──
 function switchTab(name) {
   activeTab = name;
+  // Close any open overlays
+  document.getElementById('detail-screen').classList.add('hidden');
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('import-overlay').classList.remove('open');
+  document.getElementById('picker-overlay').classList.remove('open');
+  document.getElementById('slot-type-overlay').classList.remove('open');
+  currentId = null;
+  editingId = null;
+  // Switch tab
   document.querySelectorAll('.nav-tab').forEach(function(t){ t.classList.toggle('active', t.dataset.tab===name); });
   document.querySelectorAll('.tab-screen').forEach(function(s){ s.classList.toggle('hidden', s.id!=='tab-'+name); });
   if (name==='planner') renderPlanner();
