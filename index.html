@@ -362,6 +362,67 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
 .install-banner strong{font-weight:600;display:block;margin-bottom:1px;color:var(--accent);}
 .install-banner .dismiss{margin-left:auto;font-size:18px;cursor:pointer;opacity:0.5;}
 
+/* ── GROCERY LIST ── */
+.grocery-header{padding:16px 20px 0;flex-shrink:0;border-bottom:1px solid var(--border);padding-bottom:12px;}
+.grocery-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.grocery-title{font-family:"Lora",serif;font-size:24px;font-weight:600;color:var(--brown);}
+.grocery-header-btns{display:flex;gap:8px;}
+.btn-staples-manage{background:var(--tag);color:var(--warm);font-size:18px;}
+.btn-add-item{background:var(--accent);color:var(--white);font-size:22px;box-shadow:0 3px 10px rgba(192,98,58,0.3);}
+.grocery-week-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.grocery-week-label{font-size:12px;color:var(--muted);font-weight:500;}
+.grocery-progress-wrap{margin-bottom:10px;}
+.grocery-progress-bar{height:6px;background:var(--tag);border-radius:6px;overflow:hidden;margin-bottom:4px;}
+.grocery-progress-fill{height:100%;background:var(--green);border-radius:6px;transition:width 0.4s ease;}
+.grocery-progress-label{font-size:11px;color:var(--muted);}
+.grocery-actions{display:flex;gap:8px;margin-bottom:2px;}
+.btn-generate{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;background:var(--accent);color:var(--white);border:none;border-radius:12px;padding:11px 14px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:transform 0.15s;}
+.btn-generate:active{transform:scale(0.97);}
+.btn-add-staples{display:flex;align-items:center;gap:5px;background:var(--tag);color:var(--warm);border:none;border-radius:12px;padding:11px 14px;font-family:"DM Sans",sans-serif;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.btn-add-staples:active{background:var(--accent-l);color:var(--accent);}
+.grocery-list-wrap{flex:1;overflow-y:auto;padding:12px 20px 80px;-webkit-overflow-scrolling:touch;}
+.grocery-list-wrap::-webkit-scrollbar{display:none;}
+
+/* GROCERY SECTION */
+.grocery-section{margin-bottom:16px;}
+.grocery-section-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0 6px;cursor:pointer;}
+.grocery-section-left{display:flex;align-items:center;gap:8px;}
+.grocery-section-emoji{font-size:16px;}
+.grocery-section-name{font-size:12px;font-weight:700;color:var(--warm);text-transform:uppercase;letter-spacing:0.8px;}
+.grocery-section-count{font-size:11px;color:var(--muted);}
+.grocery-section-chevron{font-size:12px;color:var(--muted);transition:transform 0.2s;}
+.grocery-section-chevron.collapsed{transform:rotate(-90deg);}
+.grocery-section-items{display:flex;flex-direction:column;gap:6px;}
+.grocery-section-items.collapsed{display:none;}
+
+/* GROCERY ITEM */
+.grocery-item{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:11px 13px;transition:opacity 0.2s;}
+.grocery-item.checked{opacity:0.45;}
+.grocery-checkbox{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);background:var(--white);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.grocery-checkbox.checked{background:var(--green);border-color:var(--green);}
+.grocery-checkbox svg{display:none;}
+.grocery-checkbox.checked svg{display:block;}
+.grocery-item-name{flex:1;font-size:14px;color:var(--brown);line-height:1.3;}
+.grocery-item.checked .grocery-item-name{text-decoration:line-through;color:var(--muted);}
+.grocery-item-source{font-size:10px;color:var(--muted);margin-top:1px;}
+.grocery-item-aisle{font-size:10px;font-weight:600;color:var(--accent);background:var(--accent-l);padding:2px 7px;border-radius:20px;white-space:nowrap;cursor:pointer;}
+.btn-remove-item{width:24px;height:24px;border-radius:50%;border:none;background:none;cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:0.5;}
+.btn-remove-item:active{opacity:1;color:var(--danger);}
+
+/* GROCERY EMPTY */
+.grocery-empty{text-align:center;padding:40px 20px;}
+.grocery-empty-emoji{font-size:48px;margin-bottom:12px;}
+.grocery-empty h3{font-family:"Lora",serif;font-size:17px;font-weight:600;color:var(--brown);margin-bottom:6px;}
+.grocery-empty p{font-size:13px;color:var(--muted);line-height:1.6;}
+
+/* STAPLES LIST */
+.staple-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);}
+.staple-item:last-child{border-bottom:none;}
+.staple-item-left{font-size:14px;color:var(--brown);}
+.staple-item-aisle{font-size:10px;color:var(--muted);}
+.btn-remove-staple{border:none;background:none;cursor:pointer;color:var(--muted);font-size:18px;padding:2px 6px;}
+.btn-remove-staple:active{color:var(--danger);}
+
 /* TOAST */
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--brown);color:var(--white);padding:10px 22px;border-radius:24px;font-size:13px;font-weight:500;z-index:400;opacity:0;transition:opacity 0.25s,transform 0.25s;white-space:nowrap;pointer-events:none;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -460,16 +521,90 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
 
     <!-- TAB: GROCERY -->
     <div class="tab-screen hidden" id="tab-grocery">
-      <div class="header">
-        <div class="header-text">
-          <h1>🛒 Grocery List</h1>
-          <p style="font-size:12px;color:var(--muted);margin-top:3px;">Coming soon</p>
+      <div class="grocery-header">
+        <div class="grocery-title-row">
+          <h1 class="grocery-title">🛒 Grocery List</h1>
+          <div class="grocery-header-btns">
+            <button class="btn-circle btn-staples-manage" id="btn-staples-manage" title="Manage staples">⭐</button>
+            <button class="btn-circle btn-add-item" id="btn-add-item" title="Add item">+</button>
+          </div>
+        </div>
+        <div class="grocery-week-row">
+          <div class="week-nav">
+            <button class="btn-today" id="btn-grocery-today">This Week</button>
+            <button class="btn-week" id="btn-grocery-prev">‹</button>
+            <button class="btn-week" id="btn-grocery-next">›</button>
+          </div>
+          <span class="grocery-week-label" id="grocery-week-label"></span>
+        </div>
+        <div class="grocery-progress-wrap" id="grocery-progress-wrap" style="display:none">
+          <div class="grocery-progress-bar"><div class="grocery-progress-fill" id="grocery-progress-fill"></div></div>
+          <span class="grocery-progress-label" id="grocery-progress-label"></span>
+        </div>
+        <div class="grocery-actions">
+          <button class="btn-generate" id="btn-generate-list">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+            Generate from Meal Plan
+          </button>
+          <button class="btn-add-staples" id="btn-add-staples">⭐ Add Staples</button>
         </div>
       </div>
-      <div class="empty" style="flex:1">
-        <div class="empty-emoji">🛒</div>
-        <h3>Grocery List</h3>
-        <p>Linked to your meal plan — coming in the next build.</p>
+      <div class="grocery-list-wrap" id="grocery-list-wrap"></div>
+    </div>
+
+    <!-- ADD GROCERY ITEM MODAL -->
+    <div class="modal-overlay" id="grocery-item-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <button class="btn-close" id="btn-close-grocery-item">×</button>
+          <h2>Add Item</h2>
+          <button class="btn-save" id="btn-save-grocery-item">Add</button>
+        </div>
+        <div class="modal-body">
+          <div class="field"><label>Item Name *</label><input type="text" id="gi-name" placeholder="e.g. Whole milk"></div>
+          <div class="field">
+            <label>Aisle</label>
+            <select id="gi-aisle">
+              <option value="Produce">🥦 Produce</option>
+              <option value="Meat & Seafood">🥩 Meat &amp; Seafood</option>
+              <option value="Dairy & Eggs">🥛 Dairy &amp; Eggs</option>
+              <option value="Bakery">🍞 Bakery</option>
+              <option value="Pantry">🥫 Pantry</option>
+              <option value="Frozen">🧊 Frozen</option>
+              <option value="Other">📦 Other</option>
+            </select>
+          </div>
+          <div style="height:20px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAPLES MANAGER MODAL -->
+    <div class="modal-overlay" id="staples-overlay">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <button class="btn-close" id="btn-close-staples">×</button>
+          <h2>⭐ My Staples</h2>
+          <div style="width:52px"></div>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.6;">Items you buy every week. Tap "Add Staples" on the grocery list to add them all at once.</p>
+          <div class="field" style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="text" id="staple-input" placeholder="e.g. Whole milk" style="flex:1">
+            <select id="staple-aisle" style="width:130px;background:var(--white);border:1px solid var(--border);border-radius:10px;padding:10px 8px;font-family:DM Sans,sans-serif;font-size:13px;color:var(--brown);outline:none;">
+              <option value="Produce">🥦 Produce</option>
+              <option value="Meat & Seafood">🥩 Meat</option>
+              <option value="Dairy & Eggs">🥛 Dairy</option>
+              <option value="Bakery">🍞 Bakery</option>
+              <option value="Pantry">🥫 Pantry</option>
+              <option value="Frozen">🧊 Frozen</option>
+              <option value="Other">📦 Other</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="btn-add-staple" style="width:100%;margin-bottom:16px">Add Staple</button>
+          <div id="staples-list-wrap"></div>
+          <div style="height:20px"></div>
+        </div>
       </div>
     </div>
 
@@ -813,6 +948,14 @@ function handleBackPress() {
     closeImport();
     return;
   }
+  if (document.getElementById('grocery-item-overlay').classList.contains('open')) {
+    closeGroceryItemModal();
+    return;
+  }
+  if (document.getElementById('staples-overlay').classList.contains('open')) {
+    closeStaplesModal();
+    return;
+  }
   if (!document.getElementById('detail-screen').classList.contains('hidden')) {
     closeDetail();
     return;
@@ -829,6 +972,8 @@ function switchTab(name) {
   document.getElementById('import-overlay').classList.remove('open');
   document.getElementById('picker-overlay').classList.remove('open');
   document.getElementById('slot-type-overlay').classList.remove('open');
+  document.getElementById('grocery-item-overlay').classList.remove('open');
+  document.getElementById('staples-overlay').classList.remove('open');
   currentId = null;
   editingId = null;
   // Switch tab
@@ -836,6 +981,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab-screen').forEach(function(s){ s.classList.toggle('hidden', s.id!=='tab-'+name); });
   if (name==='planner') renderPlanner();
   if (name==='settings') buildThemeGrid();
+  if (name==='grocery') { updateGroceryWeekLabel(); loadGroceryList(); }
 }
 
 // ── FIREBASE ──
@@ -1556,114 +1702,39 @@ function exportRecipes() {
   showToast('Exported '+recipes.length+' recipes!');
 }
 
-// ── THEMES ──
-const THEMES = [
-  {
-    id: 'rustic', name: 'Rustic', emoji: '🍂', sub: 'Warm terracotta',
-    cream:'#FBF7F0', card:'#FFFCF8', brown:'#3E2C1C', warm:'#7C5C3E',
-    accent:'#C0623A', accentL:'#F5E6DC', tag:'#EEE5D8', muted:'#9E8873',
-    border:'rgba(124,92,62,0.15)', white:'#fff'
-  },
-  {
-    id: 'midnight', name: 'Midnight', emoji: '🌙', sub: 'Deep dark mode',
-    cream:'#0F1117', card:'#1C1B26', brown:'#E8E0F0', warm:'#9B8FCC',
-    accent:'#7C6FC4', accentL:'#2A2840', tag:'#2A2840', muted:'#6B6880',
-    border:'rgba(180,170,220,0.12)', white:'#1C1B26'
-  },
-  {
-    id: 'obsidian', name: 'Obsidian', emoji: '🔥', sub: 'Dark + warm amber',
-    cream:'#121212', card:'#1E1C18', brown:'#F0EDE8', warm:'#C8A96A',
-    accent:'#C8960A', accentL:'#2E2A1E', tag:'#2E2A1E', muted:'#7A7060',
-    border:'rgba(220,160,60,0.15)', white:'#1E1C18'
-  },
-  {
-    id: 'sage', name: 'Sage', emoji: '🌿', sub: 'Fresh garden green',
-    cream:'#F2F5F0', card:'#FAFCF8', brown:'#1F2E1F', warm:'#4A7A50',
-    accent:'#3D7A4A', accentL:'#DFF0DC', tag:'#DFF0DC', muted:'#7A9478',
-    border:'rgba(58,90,58,0.15)', white:'#FAFCF8'
-  },
+// ── GROCERY LIST ──
+const AISLES = [
+  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon','lime','orange','apple','banana','berry','blueberry','strawberry','raspberry','grape','melon','mango','pineapple','peach','plum','pear','cherry','fig','fruit','vegetable','veg','fresh','produce']},
+  {id:'Meat & Seafood',emoji:'🥩', keywords:['beef','steak','ground beef','chuck','brisket','short rib','pork','bacon','ham','sausage','chorizo','pancetta','prosciutto','chicken','turkey','duck','lamb','veal','venison','meat','protein','salmon','tuna','shrimp','prawn','crab','lobster','scallop','clam','mussel','oyster','cod','tilapia','halibut','sea bass','fish','seafood','anchovy','sardine']},
+  {id:'Dairy & Eggs',  emoji:'🥛', keywords:['milk','cream','half and half','butter','ghee','cheese','cheddar','mozzarella','parmesan','ricotta','feta','brie','gouda','swiss','goat cheese','cream cheese','sour cream','yogurt','greek yogurt','egg','eggs','kefir','dairy','whipped cream','heavy cream','evaporated milk','condensed milk']},
+  {id:'Bakery',        emoji:'🍞', keywords:['bread','sourdough','baguette','roll','bun','pita','tortilla','wrap','naan','croissant','bagel','muffin','cake','pastry','pie','tart','cookie','brownie','dough','flour tortilla','bread crumb','crouton','panko']},
+  {id:'Pantry',        emoji:'🥫', keywords:['flour','sugar','salt','pepper','oil','olive oil','vegetable oil','canola oil','coconut oil','vinegar','soy sauce','hot sauce','worcestershire','fish sauce','oyster sauce','hoisin','teriyaki','pasta','noodle','rice','quinoa','oat','cereal','granola','cracker','chip','bread crumb','panko','cornstarch','baking powder','baking soda','yeast','vanilla','cocoa','chocolate','honey','maple syrup','molasses','jam','jelly','peanut butter','almond butter','tahini','stock','broth','bouillon','can','canned','tomato paste','tomato sauce','crushed tomato','coconut milk','beans','lentil','chickpea','black bean','kidney bean','navy bean','lentils','split pea','nut','almond','cashew','walnut','pecan','pine nut','seed','cumin','paprika','turmeric','cinnamon','cayenne','chili','curry','spice','herb','dried','bay leaf','oregano','thyme','rosemary','Italian seasoning','mustard','ketchup','mayo','mayonnaise','relish','capers','olive','pickle','dried fruit','raisin','cranberry','apricot','date','wine','beer','spirits','alcohol','soda','juice','water','tea','coffee']},
+  {id:'Frozen',        emoji:'🧊', keywords:['frozen','ice cream','gelato','sorbet','popsicle','ice','frost']},
+  {id:'Other',         emoji:'📦', keywords:[]},
 ];
 
-const THEME_KEY = 'rb_theme';
-let activeTheme = 'rustic';
+const STAPLES_KEY = 'rb_staples';
+let groceryWeekOffset = 0;
+let groceryData = {}; // { items: [{id,name,aisle,checked,source,manual}], generated: bool }
+let collapsedSections = {};
 
-function loadTheme() {
-  const saved = localStorage.getItem(THEME_KEY) || 'rustic';
-  applyTheme(saved, false);
-}
-
-function applyTheme(themeId, save) {
-  activeTheme = themeId;
-  // Remove all theme classes
-  document.body.classList.remove('theme-midnight','theme-obsidian','theme-sage');
-  if (themeId !== 'rustic') document.body.classList.add('theme-'+themeId);
-  if (save) localStorage.setItem(THEME_KEY, themeId);
-  // Update meta theme-color
-  const t = THEMES.find(function(x){ return x.id===themeId; });
-  if (t) {
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', t.accent);
+function getAisleForIngredient(ingredient) {
+  const lower = ingredient.toLowerCase();
+  for (var i=0; i<AISLES.length-1; i++) {
+    var aisle = AISLES[i];
+    for (var k=0; k<aisle.keywords.length; k++) {
+      if (lower.includes(aisle.keywords[k])) return aisle.id;
+    }
   }
-  // Rebuild theme grid if settings is visible
-  buildThemeGrid();
+  return 'Other';
 }
 
-function buildThemeGrid() {
-  const wrap = document.getElementById('theme-grid-wrap');
-  if (!wrap) return;
-  wrap.innerHTML = '';
-  const grid = document.createElement('div');
-  grid.className = 'theme-grid';
-  THEMES.forEach(function(t) {
-    const swatch = document.createElement('div');
-    swatch.className = 'theme-swatch' + (activeTheme===t.id?' active':'');
-    swatch.innerHTML =
-      '<div class="swatch-top" style="background:'+t.cream+';color:'+t.brown+'">'+
-        '<div class="swatch-name">'+t.emoji+' '+t.name+'</div>'+
-        '<div class="swatch-sub" style="color:'+t.muted+'">'+t.sub+'</div>'+
-      '</div>'+
-      '<div class="swatch-body" style="background:'+t.cream+'">'+
-        '<div class="swatch-card" style="background:'+t.card+';border-color:'+t.border+'">'+
-          '<div class="swatch-card-name" style="color:'+t.brown+'">🥩 Sunday Braise</div>'+
-          '<div class="swatch-pills">'+
-            '<span class="swatch-pill" style="background:'+t.tag+';color:'+t.warm+'">dinner</span>'+
-            '<span class="swatch-pill" style="background:'+t.tag+';color:'+t.warm+'">pork</span>'+
-          '</div>'+
-        '</div>'+
-        '<div class="swatch-btn" style="background:'+t.accent+';color:'+(t.id==='obsidian'?t.cream:'#fff')+'">+ Add Recipe</div>'+
-      '</div>'+
-      '<div class="swatch-nav" style="background:'+t.card+';border-top-color:'+t.border+'">'+
-        '<div class="swatch-nav-item" style="color:'+t.accent+'"><span class="swatch-nav-icon">🍳</span>Recipes</div>'+
-        '<div class="swatch-nav-item" style="color:'+t.muted+';opacity:0.5"><span class="swatch-nav-icon">📅</span>Planner</div>'+
-        '<div class="swatch-nav-item" style="color:'+t.muted+';opacity:0.5"><span class="swatch-nav-icon">🛒</span>Grocery</div>'+
-        '<div class="swatch-nav-item" style="color:'+t.muted+';opacity:0.5"><span class="swatch-nav-icon">⚙️</span>Settings</div>'+
-      '</div>';
-    swatch.addEventListener('click', function() {
-      applyTheme(t.id, true);
-      showToast(t.emoji+' '+t.name+' theme applied');
-    });
-    grid.appendChild(swatch);
-  });
-  wrap.appendChild(grid);
+function groceryWeekKey(offset) {
+  return 'grocery_' + dateToString(getMondayOfWeek(offset));
 }
 
-// ── TOAST / BANNER ──
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); },2400);
-}
-
-function showInstallBanner() {
-  if (window.matchMedia('(display-mode: standalone)').matches) return;
-  if (localStorage.getItem(BANNER_KEY)) return;
-  if (/Android/i.test(navigator.userAgent)) document.getElementById('install-banner').style.display='flex';
-}
-
-function dismissBanner() {
-  document.getElementById('install-banner').style.display='none';
-  localStorage.setItem(BANNER_KEY,'1');
-}
-</script>
-</body>
-</html>
+function updateGroceryWeekLabel() {
+  const monday = getMondayOfWeek(groceryWeekOffset);
+  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
+  const label = MONTHS[monday.getMonth()]+' '+monday.getDate()+' – '+MONTHS[sunday.getMonth()]+' '+sunday.getDate()+', '+sunday.getFullYear();
+  document.getElementById('grocery-
