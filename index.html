@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -433,8 +433,10 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
 
   <!-- LOADING -->
   <div class="screen" id="loading-screen">
-    <div class="spinner"></div>
-    <div class="loading-text">Loading your recipes...</div>
+    <div class="spinner" id="loading-spinner"></div>
+    <div class="loading-text" id="loading-text">Loading your recipes...</div>
+    <button id="btn-retry-connect" style="display:none;margin-top:20px;background:var(--accent);color:#fff;border:none;border-radius:20px;padding:10px 24px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Retry Connection</button>
+    <button id="btn-reset-config" style="display:none;margin-top:10px;background:none;color:var(--muted);border:none;font-family:DM Sans,sans-serif;font-size:13px;cursor:pointer;text-decoration:underline;">Reset Firebase Config</button>
   </div>
 
   <!-- SETUP -->
@@ -881,6 +883,24 @@ function showSetup() {
 
 function bindEvents() {
   document.getElementById('btn-connect').addEventListener('click', connectFirebase);
+  document.getElementById('btn-retry-connect').addEventListener('click', function(){
+    var spinner = document.getElementById('loading-spinner');
+    var retryBtn = document.getElementById('btn-retry-connect');
+    var resetBtn = document.getElementById('btn-reset-config');
+    var el = document.getElementById('loading-text');
+    if (spinner) spinner.style.display = 'block';
+    if (retryBtn) retryBtn.style.display = 'none';
+    if (resetBtn) resetBtn.style.display = 'none';
+    if (el) el.textContent = 'Retrying...';
+    isInitialized = false;
+    startListening();
+  });
+  document.getElementById('btn-reset-config').addEventListener('click', function(){
+    if (confirm('Reset Firebase config? You will need to paste it again.')) {
+      localStorage.removeItem(CONFIG_KEY);
+      location.reload();
+    }
+  });
   document.getElementById('btn-add-recipe').addEventListener('click', openForm);
   document.getElementById('btn-import-open').addEventListener('click', openImport);
   document.getElementById('btn-dismiss-banner').addEventListener('click', dismissBanner);
@@ -1022,12 +1042,35 @@ function initFirebase(config) {
 function startListening() {
   setSyncState('syncing');
   if (unsubscribe) unsubscribe();
+
+  // Show progress messages while waiting
+  var msgTimer1 = setTimeout(function(){
+    var el = document.getElementById('loading-text');
+    if (el) el.textContent = 'Connecting to Firebase...';
+  }, 2000);
+  var msgTimer2 = setTimeout(function(){
+    var el = document.getElementById('loading-text');
+    if (el) el.textContent = 'Still connecting — check your internet...';
+  }, 4000);
+
   const timeout = setTimeout(function(){
-    if (!isInitialized){ isInitialized=true; showMainApp(); }
-    setSyncState('error'); showToast('Connection timed out');
-  }, 8000);
+    clearTimeout(msgTimer1); clearTimeout(msgTimer2);
+    if (!isInitialized) {
+      // Show retry UI instead of just proceeding silently
+      var el = document.getElementById('loading-text');
+      var spinner = document.getElementById('loading-spinner');
+      var retryBtn = document.getElementById('btn-retry-connect');
+      var resetBtn = document.getElementById('btn-reset-config');
+      if (el) el.textContent = 'Could not reach Firebase. Check your connection or rules.';
+      if (spinner) spinner.style.display = 'none';
+      if (retryBtn) retryBtn.style.display = 'inline-block';
+      if (resetBtn) resetBtn.style.display = 'inline-block';
+    }
+    setSyncState('error');
+  }, 6000);
+
   unsubscribe = onSnapshot(collection(db,'recipes'), function(snapshot){
-    clearTimeout(timeout);
+    clearTimeout(timeout); clearTimeout(msgTimer1); clearTimeout(msgTimer2);
     recipes=[];
     snapshot.forEach(function(d){ recipes.push(Object.assign({},d.data(),{id:d.id})); });
     recipes.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
@@ -1035,11 +1078,23 @@ function startListening() {
     if (!isInitialized){ isInitialized=true; showMainApp(); showInstallBanner(); }
     buildCategoryPills(); buildTagChips(); renderRecipeList();
     if (activeTab==='planner') renderPlanner();
+    if (activeTab==='grocery') { updateGroceryWeekLabel(); loadGroceryList(); }
   }, function(error){
-    clearTimeout(timeout);
+    clearTimeout(timeout); clearTimeout(msgTimer1); clearTimeout(msgTimer2);
+    console.error('Firestore error:', error);
     setSyncState('error');
-    if (!isInitialized){ isInitialized=true; showMainApp(); }
-    showToast('Sync error — check connection');
+    if (!isInitialized) {
+      var el = document.getElementById('loading-text');
+      var spinner = document.getElementById('loading-spinner');
+      var retryBtn = document.getElementById('btn-retry-connect');
+      var resetBtn = document.getElementById('btn-reset-config');
+      if (el) el.textContent = 'Firebase error: ' + (error.code || error.message || 'check your rules');
+      if (spinner) spinner.style.display = 'none';
+      if (retryBtn) retryBtn.style.display = 'inline-block';
+      if (resetBtn) resetBtn.style.display = 'inline-block';
+    } else {
+      showToast('Sync error — check connection');
+    }
   });
 }
 
@@ -1705,36 +1760,4 @@ function exportRecipes() {
 // ── GROCERY LIST ──
 const AISLES = [
   {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon','lime','orange','apple','banana','berry','blueberry','strawberry','raspberry','grape','melon','mango','pineapple','peach','plum','pear','cherry','fig','fruit','vegetable','veg','fresh','produce']},
-  {id:'Meat & Seafood',emoji:'🥩', keywords:['beef','steak','ground beef','chuck','brisket','short rib','pork','bacon','ham','sausage','chorizo','pancetta','prosciutto','chicken','turkey','duck','lamb','veal','venison','meat','protein','salmon','tuna','shrimp','prawn','crab','lobster','scallop','clam','mussel','oyster','cod','tilapia','halibut','sea bass','fish','seafood','anchovy','sardine']},
-  {id:'Dairy & Eggs',  emoji:'🥛', keywords:['milk','cream','half and half','butter','ghee','cheese','cheddar','mozzarella','parmesan','ricotta','feta','brie','gouda','swiss','goat cheese','cream cheese','sour cream','yogurt','greek yogurt','egg','eggs','kefir','dairy','whipped cream','heavy cream','evaporated milk','condensed milk']},
-  {id:'Bakery',        emoji:'🍞', keywords:['bread','sourdough','baguette','roll','bun','pita','tortilla','wrap','naan','croissant','bagel','muffin','cake','pastry','pie','tart','cookie','brownie','dough','flour tortilla','bread crumb','crouton','panko']},
-  {id:'Pantry',        emoji:'🥫', keywords:['flour','sugar','salt','pepper','oil','olive oil','vegetable oil','canola oil','coconut oil','vinegar','soy sauce','hot sauce','worcestershire','fish sauce','oyster sauce','hoisin','teriyaki','pasta','noodle','rice','quinoa','oat','cereal','granola','cracker','chip','bread crumb','panko','cornstarch','baking powder','baking soda','yeast','vanilla','cocoa','chocolate','honey','maple syrup','molasses','jam','jelly','peanut butter','almond butter','tahini','stock','broth','bouillon','can','canned','tomato paste','tomato sauce','crushed tomato','coconut milk','beans','lentil','chickpea','black bean','kidney bean','navy bean','lentils','split pea','nut','almond','cashew','walnut','pecan','pine nut','seed','cumin','paprika','turmeric','cinnamon','cayenne','chili','curry','spice','herb','dried','bay leaf','oregano','thyme','rosemary','Italian seasoning','mustard','ketchup','mayo','mayonnaise','relish','capers','olive','pickle','dried fruit','raisin','cranberry','apricot','date','wine','beer','spirits','alcohol','soda','juice','water','tea','coffee']},
-  {id:'Frozen',        emoji:'🧊', keywords:['frozen','ice cream','gelato','sorbet','popsicle','ice','frost']},
-  {id:'Other',         emoji:'📦', keywords:[]},
-];
-
-const STAPLES_KEY = 'rb_staples';
-let groceryWeekOffset = 0;
-let groceryData = {}; // { items: [{id,name,aisle,checked,source,manual}], generated: bool }
-let collapsedSections = {};
-
-function getAisleForIngredient(ingredient) {
-  const lower = ingredient.toLowerCase();
-  for (var i=0; i<AISLES.length-1; i++) {
-    var aisle = AISLES[i];
-    for (var k=0; k<aisle.keywords.length; k++) {
-      if (lower.includes(aisle.keywords[k])) return aisle.id;
-    }
-  }
-  return 'Other';
-}
-
-function groceryWeekKey(offset) {
-  return 'grocery_' + dateToString(getMondayOfWeek(offset));
-}
-
-function updateGroceryWeekLabel() {
-  const monday = getMondayOfWeek(groceryWeekOffset);
-  const sunday = new Date(monday); sunday.setDate(monday.getDate()+6);
-  const label = MONTHS[monday.getMonth()]+' '+monday.getDate()+' – '+MONTHS[sunday.getMonth()]+' '+sunday.getDate()+', '+sunday.getFullYear();
-  document.getElementById('grocery-
+  {id:'Meat & Seafood',emoji:'🥩', keywords:['beef','steak','ground beef','chuck','brisket','short rib','pork','bacon','ham'
