@@ -32,7 +32,6 @@
     var lineY=cy+ch*0.35;for(var i=0;i<3;i++){ctx.beginPath();ctx.roundRect(cx+s*0.04,lineY,cw*(0.75-i*0.1),s*0.02,s*0.008);ctx.fill();lineY+=s*0.065;}
     ctx.globalAlpha=1;ctx.fillStyle='#E8855A';ctx.beginPath();ctx.arc(s*0.50,s*0.82,s*0.042,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#C0623A';ctx.beginPath();ctx.arc(s*0.50,s*0.82,s*0.022,0,Math.PI*2);ctx.fill();
-
     return c.toDataURL('image/png');
   }
   window.addEventListener('DOMContentLoaded',function(){
@@ -1057,15 +1056,14 @@ function startListening() {
   const timeout = setTimeout(function(){
     clearTimeout(msgTimer1); clearTimeout(msgTimer2);
     if (!isInitialized) {
-      // Show retry UI instead of just proceeding silently
-      var el = document.getElementById('loading-text');
-      var spinner = document.getElementById('loading-spinner');
-      var retryBtn = document.getElementById('btn-retry-connect');
-      var resetBtn = document.getElementById('btn-reset-config');
-      if (el) el.textContent = 'Could not reach Firebase. Check your connection or rules.';
-      if (spinner) spinner.style.display = 'none';
-      if (retryBtn) retryBtn.style.display = 'inline-block';
-      if (resetBtn) resetBtn.style.display = 'inline-block';
+      isInitialized = true;
+      // Show the setup screen so user can re-enter config
+      // This handles expired rules, bad config, or network issues
+      localStorage.removeItem(CONFIG_KEY);
+      document.getElementById('loading-screen').classList.add('hidden');
+      document.getElementById('setup-screen').classList.remove('hidden');
+      document.getElementById('setup-error').textContent = 'Connection timed out. Please check your Firebase rules are published and re-paste your config.';
+      document.getElementById('setup-error').classList.add('show');
     }
     setSyncState('error');
   }, 6000);
@@ -1085,14 +1083,16 @@ function startListening() {
     console.error('Firestore error:', error);
     setSyncState('error');
     if (!isInitialized) {
-      var el = document.getElementById('loading-text');
-      var spinner = document.getElementById('loading-spinner');
-      var retryBtn = document.getElementById('btn-retry-connect');
-      var resetBtn = document.getElementById('btn-reset-config');
-      if (el) el.textContent = 'Firebase error: ' + (error.code || error.message || 'check your rules');
-      if (spinner) spinner.style.display = 'none';
-      if (retryBtn) retryBtn.style.display = 'inline-block';
-      if (resetBtn) resetBtn.style.display = 'inline-block';
+      isInitialized = true;
+      localStorage.removeItem(CONFIG_KEY);
+      document.getElementById('loading-screen').classList.add('hidden');
+      document.getElementById('setup-screen').classList.remove('hidden');
+      var msg = 'Firebase error';
+      if (error.code === 'permission-denied') msg = 'Permission denied — check your Firestore rules are published.';
+      else if (error.code === 'unavailable') msg = 'Firebase unavailable — check your internet connection.';
+      else if (error.message) msg = error.message;
+      document.getElementById('setup-error').textContent = msg + ' Please re-paste your config to reconnect.';
+      document.getElementById('setup-error').classList.add('show');
     } else {
       showToast('Sync error — check connection');
     }
@@ -1760,5 +1760,4 @@ function exportRecipes() {
 
 // ── GROCERY LIST ──
 const AISLES = [
-  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon','lime','orange','apple','banana','berry','blueberry','strawberry','raspberry','grape','melon','mango','pineapple','peach','plum','pear','cherry','fig','fruit','vegetable','veg','fresh','produce']},
-  {id:'Meat & Seafood',emoji:'🥩', keywords:['beef','steak','ground beef','chuck','brisket','short rib','pork','bacon','ham'
+  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon','lime','orange','apple','banana','berry','blueberry','strawberry','raspberry','grape','melon','mango','pineapple','peach','plum','pear','cherry','fig','f
