@@ -432,7 +432,7 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
 <div id="app">
 
   <!-- LOADING -->
-  <div class="screen" id="loading-screen">
+  <div class="screen hidden" id="loading-screen">
     <div class="spinner" id="loading-spinner"></div>
     <div class="loading-text" id="loading-text">Loading your recipes...</div>
     <button id="btn-retry-connect" style="display:none;margin-top:20px;background:var(--accent);color:#fff;border:none;border-radius:20px;padding:10px 24px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer;">Retry Connection</button>
@@ -440,7 +440,7 @@ html,body{height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;c
   </div>
 
   <!-- SETUP -->
-  <div class="screen hidden" id="setup-screen">
+  <div class="screen" id="setup-screen">
     <div class="setup-logo">
       <div class="logo-icon">🍳</div>
       <h1>Recipe Box</h1>
@@ -1025,6 +1025,8 @@ function connectFirebase() {
 function initFirebase(config) {
   document.getElementById('setup-screen').classList.add('hidden');
   document.getElementById('loading-screen').classList.remove('hidden');
+  document.getElementById('loading-spinner').style.display = 'block';
+  document.getElementById('loading-text').textContent = 'Loading your recipes...';
   try {
     const app = initializeApp(config);
     db = getFirestore(app);
@@ -1760,4 +1762,4 @@ function exportRecipes() {
 
 // ── GROCERY LIST ──
 const AISLES = [
-  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon','lime','orange','apple','banana','berry','blueberry','strawberry','raspberry','grape','melon','mango','pineapple','peach','plum','pear','cherry','fig','f
+  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon',
