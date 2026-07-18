@@ -32,6 +32,7 @@
     var lineY=cy+ch*0.35;for(var i=0;i<3;i++){ctx.beginPath();ctx.roundRect(cx+s*0.04,lineY,cw*(0.75-i*0.1),s*0.02,s*0.008);ctx.fill();lineY+=s*0.065;}
     ctx.globalAlpha=1;ctx.fillStyle='#E8855A';ctx.beginPath();ctx.arc(s*0.50,s*0.82,s*0.042,0,Math.PI*2);ctx.fill();
     ctx.fillStyle='#C0623A';ctx.beginPath();ctx.arc(s*0.50,s*0.82,s*0.022,0,Math.PI*2);ctx.fill();
+
     return c.toDataURL('image/png');
   }
   window.addEventListener('DOMContentLoaded',function(){
