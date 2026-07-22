@@ -883,19 +883,17 @@ function showSetup() {
 
 function bindEvents() {
   document.getElementById('btn-connect').addEventListener('click', connectFirebase);
-  document.getElementById('btn-retry-connect').addEventListener('click', function(){
-    var spinner = document.getElementById('loading-spinner');
-    var retryBtn = document.getElementById('btn-retry-connect');
-    var resetBtn = document.getElementById('btn-reset-config');
-    var el = document.getElementById('loading-text');
-    if (spinner) spinner.style.display = 'block';
-    if (retryBtn) retryBtn.style.display = 'none';
-    if (resetBtn) resetBtn.style.display = 'none';
-    if (el) el.textContent = 'Retrying...';
+  var retryEl = document.getElementById('btn-retry-connect');
+  if (retryEl) retryEl.addEventListener('click', function(){
+    document.getElementById('loading-spinner').style.display = 'block';
+    document.getElementById('btn-retry-connect').style.display = 'none';
+    document.getElementById('btn-reset-config').style.display = 'none';
+    document.getElementById('loading-text').textContent = 'Retrying...';
     isInitialized = false;
     startListening();
   });
-  document.getElementById('btn-reset-config').addEventListener('click', function(){
+  var resetEl = document.getElementById('btn-reset-config');
+  if (resetEl) resetEl.addEventListener('click', function(){
     if (confirm('Reset Firebase config? You will need to paste it again.')) {
       localStorage.removeItem(CONFIG_KEY);
       location.reload();
@@ -1762,4 +1760,4 @@ function exportRecipes() {
 
 // ── GROCERY LIST ──
 const AISLES = [
-  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon',
+  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon','lime','orange','apple','banana','berry','blueberry','strawberry','raspberr
