@@ -925,6 +925,22 @@ function bindEvents() {
   document.querySelectorAll('.nav-tab').forEach(function(tab){
     tab.addEventListener('click', function(){ switchTab(tab.dataset.tab); });
   });
+  // Grocery
+  document.getElementById('btn-grocery-prev').addEventListener('click', function(){ groceryWeekOffset--; updateGroceryWeekLabel(); loadGroceryList(); });
+  document.getElementById('btn-grocery-next').addEventListener('click', function(){ groceryWeekOffset++; updateGroceryWeekLabel(); loadGroceryList(); });
+  document.getElementById('btn-grocery-today').addEventListener('click', function(){ groceryWeekOffset=0; updateGroceryWeekLabel(); loadGroceryList(); });
+  document.getElementById('btn-generate-list').addEventListener('click', generateGroceryList);
+  document.getElementById('btn-add-item').addEventListener('click', openGroceryItemModal);
+  document.getElementById('btn-add-staples').addEventListener('click', addStaplesToList);
+  document.getElementById('btn-staples-manage').addEventListener('click', openStaplesModal);
+  document.getElementById('btn-close-grocery-item').addEventListener('click', closeGroceryItemModal);
+  document.getElementById('btn-save-grocery-item').addEventListener('click', saveGroceryItem);
+  document.getElementById('grocery-item-overlay').addEventListener('click', function(e){ if(e.target===this) closeGroceryItemModal(); });
+  document.getElementById('btn-close-staples').addEventListener('click', closeStaplesModal);
+  document.getElementById('staples-overlay').addEventListener('click', function(e){ if(e.target===this) closeStaplesModal(); });
+  document.getElementById('btn-add-staple').addEventListener('click', addStaple);
+  document.getElementById('staple-input').addEventListener('keydown', function(e){ if(e.key==='Enter') addStaple(); });
+  document.getElementById('gi-name').addEventListener('keydown', function(e){ if(e.key==='Enter') saveGroceryItem(); });
 }
 
 // ── TABS ──
@@ -1013,9 +1029,19 @@ function connectFirebase() {
     if (match) {
       const jsonStr = match[1].replace(/\/\/.*$/gm,'').replace(/,\s*}/g,'}').replace(/([{,]\s*)(\w+)(\s*:)/g,'$1"$2"$3').replace(/:\s*"([^"]+)"/g,': "$1"');
       config = JSON.parse(jsonStr);
-    } else { config = JSON.parse(raw); }
-  } catch(e) { errEl.textContent='Could not read the config. Make sure you pasted the full firebaseConfig block.'; errEl.classList.add('show'); return; }
-  if (!config||!config.projectId||!config.apiKey) { errEl.textContent='Config looks incomplete.'; errEl.classList.add('show'); return; }
+    } else {
+      config = JSON.parse(raw);
+    }
+  } catch(e) {
+    errEl.textContent = 'Could not read the config. Make sure you pasted the full firebaseConfig block.';
+    errEl.classList.add('show');
+    return;
+  }
+  if (!config || !config.projectId || !config.apiKey) {
+    errEl.textContent = 'Config looks incomplete. Make sure it includes apiKey and projectId.';
+    errEl.classList.add('show');
+    return;
+  }
   localStorage.setItem(CONFIG_KEY, JSON.stringify(config));
   initFirebase(config);
 }
@@ -1724,40 +1750,4 @@ async function saveForm() {
   const idx=recipes.findIndex(function(x){ return x.id===data.id; });
   if (idx!==-1) recipes[idx]=data; else recipes.unshift(data);
   if (wasEditing&&wasViewing===wasEditing){ openDetail(wasEditing); }
-  else if (!wasEditing){ buildCategoryPills(); buildTagChips(); renderRecipeList(); }
-  showToast(wasEditing?'Recipe updated!':'Recipe saved!');
-  await saveRecipe(data);
-}
-
-function buildEmojiGrid(selected) {
-  const grid=document.getElementById('emoji-grid'); grid.innerHTML='';
-  EMOJIS.forEach(function(e){
-    const btn=document.createElement('button'); btn.type='button';
-    btn.className='emoji-opt'+(e===selected?' active':'');
-    btn.textContent=e;
-    btn.addEventListener('click',function(){ pickEmoji(e); });
-    grid.appendChild(btn);
-  });
-}
-
-function pickEmoji(e) {
-  document.getElementById('f-emoji').value=e;
-  document.querySelectorAll('.emoji-opt').forEach(function(el){ el.classList.toggle('active',el.textContent===e); });
-}
-
-// ── EXPORT ──
-function exportRecipes() {
-  if (!recipes.length){ showToast('No recipes to export'); return; }
-  const data=JSON.stringify(recipes,null,2);
-  const blob=new Blob([data],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url; a.download='recipebox-backup-'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast('Exported '+recipes.length+' recipes!');
-}
-
-// ── GROCERY LIST ──
-const AISLES = [
-  {id:'Produce',       emoji:'🥦', keywords:['lettuce','spinach','kale','arugula','cabbage','broccoli','cauliflower','carrot','celery','cucumber','zucchini','squash','pepper','tomato','onion','garlic','shallot','leek','scallion','green onion','mushroom','potato','sweet potato','yam','corn','pea','bean','asparagus','artichoke','beet','radish','turnip','parsnip','fennel','ginger','herb','basil','cilantro','parsley','thyme','rosemary','mint','dill','chive','sage','oregano','avocado','lemon','lime','orange','apple','banana','berry','blueberry','strawberry','raspberr
+  else if (!wasEditing){ buildCategoryPills(); buildTagChips(); renderRecipeList()
